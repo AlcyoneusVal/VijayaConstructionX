@@ -1392,6 +1392,13 @@ button {
   border-radius: 12px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(14px);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+}
+
+.mobile-cta.scroll-hidden {
+  transform: translateY(calc(100% + 20px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 .agent-chat {
@@ -1400,6 +1407,13 @@ button {
   bottom: 22px;
   z-index: 76;
   font-family: inherit;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+}
+
+.agent-chat.scroll-hidden {
+  transform: translateY(calc(100% + 30px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 .agent-chat summary {

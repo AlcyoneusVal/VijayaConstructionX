@@ -180,6 +180,22 @@
     body.appendChild(progressBar);
   }
 
+  /* Scroll-hide targets: mobile CTA bar + agent chat widget */
+  const agentChat = document.querySelector(".agent-chat");
+  const mobileCta = document.querySelector(".mobile-cta");
+  const scrollHideTargets = [mobileCta, agentChat].filter(Boolean);
+  let scrollHideTimer = null;
+
+  const setScrollHidden = (hidden) => {
+    scrollHideTargets.forEach((el) => {
+      el.classList.toggle("scroll-hidden", hidden);
+    });
+    /* Close the agent chat panel when hiding */
+    if (hidden && agentChat && agentChat.open) {
+      agentChat.removeAttribute("open");
+    }
+  };
+
   let ticking = false;
   const onScroll = () => {
     if (ticking) return;
@@ -196,6 +212,17 @@
           progressBar.style.transform = "scaleX(" + p + ")";
         }
       }
+
+      /* Hide CTA / agent-chat when scrolling, show at top or after pause */
+      if (y > 60) {
+        setScrollHidden(true);
+        clearTimeout(scrollHideTimer);
+        scrollHideTimer = setTimeout(() => setScrollHidden(false), 1500);
+      } else {
+        clearTimeout(scrollHideTimer);
+        setScrollHidden(false);
+      }
+
       ticking = false;
     });
   };
@@ -219,7 +246,6 @@
   /* ---------------------------------------------------------------
      Floating agent contact panel.
   --------------------------------------------------------------- */
-  const agentChat = document.querySelector(".agent-chat");
   if (agentChat) {
     document.addEventListener("click", (event) => {
       if (!agentChat.open || agentChat.contains(event.target)) return;
