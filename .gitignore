@@ -1,0 +1,11 @@
+.DS_Store
+.claude/
+.playwright-cli/
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.env
+.env.*
+*.log
+tmp/

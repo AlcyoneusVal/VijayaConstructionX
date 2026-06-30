@@ -1,0 +1,4 @@
+Contact: mailto:partner@vijaya.construction
+Preferred-Languages: en
+Canonical: https://vijaya.construction/.well-known/security.txt
+Policy: https://vijaya.construction/SECURITY.md
