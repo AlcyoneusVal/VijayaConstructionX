@@ -3,6 +3,7 @@
 .playwright-cli/
 node_modules/
 dist/
+preview-all-edits/
 __pycache__/
 *.pyc
 .env

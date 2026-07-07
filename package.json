@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "VIJAYA_OUTPUT_DIR=dist node scripts/build-site.mjs",
+    "build:all-edits-preview": "VIJAYA_SITE_VARIANT=all-edits-preview VIJAYA_OUTPUT_DIR=preview-all-edits node scripts/build-site.mjs",
     "build:root": "node scripts/build-site.mjs",
     "serve": "python3 -m http.server 8000"
   }

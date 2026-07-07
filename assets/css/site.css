@@ -1422,6 +1422,15 @@ button {
   max-width: 620px;
 }
 
+.footer-brandline {
+  margin: 0 0 18px;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .footer-grid p,
 .footer-grid a {
   color: rgba(255, 255, 255, 0.72);
@@ -2295,6 +2304,15 @@ html.js .proof-item.is-visible {
 .footer-wordmark.is-visible .wm-letter {
   transform: translateY(0) rotate(0);
   opacity: 1;
+}
+body.variant-all-edits-preview .footer-wordmark .wm-letter {
+  transform: none !important;
+  opacity: 0.94 !important;
+}
+body.variant-all-edits-preview .site-footer .reveal-blur {
+  transform: none !important;
+  filter: none !important;
+  opacity: 1 !important;
 }
 html:not(.js) .footer-wordmark .wm-letter {
   transform: none;
