@@ -2,7 +2,6 @@
   const body = document.body;
   const root = document.documentElement;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
   /* ---------------------------------------------------------------
      Mobile navigation
@@ -64,7 +63,7 @@
       const span = document.createElement("span");
       span.className = "wm-letter";
       span.textContent = ch === " " ? " " : ch;
-      span.style.transitionDelay = i * 70 + "ms";
+      span.style.transitionDelay = Math.min(i * 30, 420) + "ms";
       wordmark.appendChild(span);
     });
   }
@@ -228,20 +227,6 @@
   };
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
-
-  /* ---------------------------------------------------------------
-     Pointer glow on project cards.
-  --------------------------------------------------------------- */
-  if (finePointer && !reduceMotion) {
-    document.querySelectorAll(".project-card").forEach((card) => {
-      card.addEventListener("mousemove", (e) => {
-        const r = card.getBoundingClientRect();
-        card.style.setProperty("--mx", ((e.clientX - r.left) / r.width) * 100 + "%");
-        card.style.setProperty("--my", ((e.clientY - r.top) / r.height) * 100 + "%");
-      });
-    });
-
-  }
 
   /* ---------------------------------------------------------------
      Floating agent contact panel.
