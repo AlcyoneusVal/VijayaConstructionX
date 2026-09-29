@@ -536,7 +536,7 @@ function organizationSchema() {
     name: site.name,
     url: SITE_URL,
     logo: `${SITE_URL}/assets/images/vijaya-logo.png`,
-    description: "Vijaya Construction builds luxury flats and premium residential projects in Guwahati and Tezpur, backed by 22 completed projects, 700+ delivered homes and commercial spaces, and membership in AREIDA.",
+    description: "Vijaya Construction builds flats and premium residential projects in Guwahati and Tezpur, backed by 22 completed projects, 700+ homes and commercial spaces delivered or planned, and membership in AREIDA.",
     slogan: "Luxury flats in Guwahati, built with trust.",
     telephone: site.phone,
     email: site.email,
@@ -704,7 +704,7 @@ function proofStats() {
   return `<section class="section section-tight">
   <div class="section-inner proof-grid">
     <div class="proof-item"><strong class="count-up" data-count-to="22">22</strong><span>Completed projects across Guwahati and Tezpur</span></div>
-    <div class="proof-item"><strong class="count-up" data-count-to="700" data-count-suffix="+">700+</strong><span>Homes and commercial spaces delivered</span></div>
+    <div class="proof-item"><strong class="count-up" data-count-to="700" data-count-suffix="+">700+</strong><span>Homes and commercial spaces delivered or planned</span></div>
     <div class="proof-item"><strong class="count-up" data-count-to="2002">2002</strong><span>Shaping Assam's skyline and building excellence for over 2 decades</span></div>
     <div class="proof-item"><strong class="count-up" data-count-to="3">3</strong><span>${fourthStat}</span></div>
   </div>
@@ -878,7 +878,7 @@ function completedPage() {
       <h1>The Proof is in our Completed Projects.</h1>
       <p>${completedHeroCopy}</p>
     </div>
-    <div class="project-meta-panel">${detailList({ location: "Guwahati and Tezpur", type: "Completed residential portfolio", units: "700+ homes and commercial spaces", status: "Completed", completed: "2006-2024" })}</div>
+    <div class="project-meta-panel">${detailList({ location: "Guwahati and Tezpur", type: "Completed residential portfolio", units: "700+ homes and commercial spaces delivered or planned", status: "Completed", completed: "2006-2024" })}</div>
   </div>
 </section>
 <section class="section">
