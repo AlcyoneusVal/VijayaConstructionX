@@ -37,7 +37,6 @@
 
   // Big content blocks settle onto a tilting 3D plane.
   swapClass(".feature-project", "reveal", "tilt-in");
-  swapClass(".media-mosaic", "reveal", "tilt-in");
 
   // Framed media wipes open as it enters the viewport.
   swapClass(".proof-photo", "reveal", "media-reveal");
@@ -182,6 +181,7 @@
   /* Scroll-hide targets: mobile CTA bar + agent chat widget */
   const agentChat = document.querySelector(".agent-chat");
   const mobileCta = document.querySelector(".mobile-cta");
+  const pageHero = document.querySelector(".page-main > .hero");
   const scrollHideTargets = [mobileCta, agentChat].filter(Boolean);
   let scrollHideTimer = null;
 
@@ -201,6 +201,11 @@
     ticking = true;
     requestAnimationFrame(() => {
       const y = window.scrollY || window.pageYOffset;
+
+      if (mobileCta && pageHero) {
+        const heroEnd = pageHero.offsetTop + pageHero.offsetHeight;
+        mobileCta.classList.toggle("before-hero", y < heroEnd - window.innerHeight * 0.5);
+      }
 
       if (header) header.classList.toggle("is-scrolled", y > 24);
 
@@ -244,8 +249,14 @@
   /* ---------------------------------------------------------------
      Lead form submission (Web3Forms) with validation + throttle.
   --------------------------------------------------------------- */
-  const contactPattern = /^([^\s@]+@[^\s@]+\.[^\s@]+|(\+91[\-\s]?)?[6-9]\d{9})$/;
+  const contactPattern = /^([^\s@]+@[^\s@]+\.[^\s@]+|(\+91)?[6-9]\d{9})$/;
   let lastSubmit = 0;
+
+  const sourceField = document.querySelector("[data-enquiry-source]");
+  if (sourceField) {
+    const source = new URLSearchParams(location.search).get("source");
+    if (source && /^[a-z0-9-]{1,30}$/i.test(source)) sourceField.value = source;
+  }
 
   document.querySelectorAll("form.lead-form").forEach((form) => {
     form.addEventListener("submit", async (event) => {
@@ -254,22 +265,30 @@
       const botcheck = form.querySelector('[name="botcheck"]');
       if (botcheck && botcheck.value) return;
 
+      const status = form.querySelector("[data-form-status]");
       const contact = (form.querySelector('[name="contact"]')?.value || "").trim();
-      if (!contactPattern.test(contact)) {
-        alert("Please enter a valid phone number or email.");
+      const normalizedContact = contact.includes("@") ? contact : contact.replace(/[\s-]/g, "");
+      const requiresMobile = form.classList.contains("interest-form");
+      const validContact = requiresMobile
+        ? /^(\+91)?[6-9]\d{9}$/.test(normalizedContact)
+        : contactPattern.test(normalizedContact);
+      if (!validContact) {
+        if (status) status.textContent = requiresMobile
+          ? "Please enter a valid Indian mobile number."
+          : "Please enter a valid Indian mobile number or email address.";
         return;
       }
 
       const name = (form.querySelector('[name="name"]')?.value || "").trim();
       const message = (form.querySelector('[name="message"]')?.value || "").trim();
       if (name.length > 90 || contact.length > 120 || message.length > 1200) {
-        alert("Please shorten your enquiry before submitting.");
+        if (status) status.textContent = "Please shorten your enquiry before submitting.";
         return;
       }
 
       const now = Date.now();
       if (now - lastSubmit < 30000) {
-        alert("Please wait a moment before submitting again.");
+        if (status) status.textContent = "Please wait a moment before submitting again.";
         return;
       }
 
@@ -279,6 +298,7 @@
         button.textContent = "Sending...";
         button.disabled = true;
       }
+      if (status) status.textContent = "Sending your enquiry...";
 
       try {
         const response = await fetch("https://api.web3forms.com/submit", {
@@ -294,6 +314,9 @@
         lastSubmit = Date.now();
         form.reset();
         if (button) button.textContent = "Request sent";
+        if (status) status.textContent = requiresMobile
+          ? "Thank you. Our sales team will contact you during your selected window."
+          : "Thank you. Our sales team will be in touch soon.";
         setTimeout(() => {
           if (button) {
             button.textContent = originalText;
@@ -305,6 +328,7 @@
           button.textContent = "Try again";
           button.disabled = false;
         }
+        if (status) status.textContent = "We could not send your request. Please try again, or call our sales desk.";
       }
     });
   });
