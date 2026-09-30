@@ -51,20 +51,31 @@
   // (.proof-item rule lives in CSS; we collect it below.)
 
   /* ---------------------------------------------------------------
-     Animated outro wordmark — split into per-letter spans.
+     Footer monogram expands on hover, focus, or touch.
   --------------------------------------------------------------- */
   const wordmark = document.querySelector(".footer-wordmark");
-  if (wordmark && !wordmark.dataset.split) {
-    const text = wordmark.textContent.trim();
-    wordmark.textContent = "";
-    wordmark.dataset.split = "1";
-    [...text].forEach((ch, i) => {
-      const span = document.createElement("span");
-      span.className = "wm-letter";
-      span.textContent = ch === " " ? " " : ch;
-      span.style.transitionDelay = Math.min(i * 30, 420) + "ms";
-      wordmark.appendChild(span);
+  if (wordmark) {
+    const syncWordmarkState = () => {
+      const hovered = window.matchMedia("(hover: hover) and (pointer: fine)").matches && wordmark.matches(":hover");
+      wordmark.setAttribute("aria-expanded", String(hovered || wordmark.matches(":focus-visible") || wordmark.classList.contains("is-expanded")));
+    };
+    wordmark.addEventListener("click", () => {
+      if (!window.matchMedia("(hover: none)").matches) return;
+      wordmark.classList.toggle("is-expanded");
+      syncWordmarkState();
     });
+    ["mouseenter", "mouseleave", "focus", "blur"].forEach(event => wordmark.addEventListener(event, syncWordmarkState));
+    if ("IntersectionObserver" in window) {
+      const wordmarkObserver = new IntersectionObserver(entries => {
+        if (entries.some(entry => entry.isIntersecting)) {
+          wordmark.classList.add("is-visible");
+          wordmarkObserver.disconnect();
+        }
+      }, { threshold: 0.2 });
+      wordmarkObserver.observe(wordmark);
+    } else {
+      wordmark.classList.add("is-visible");
+    }
   }
 
   /* ---------------------------------------------------------------
@@ -123,7 +134,7 @@
      with a gentle stagger between siblings sharing a parent.
   --------------------------------------------------------------- */
   const animated = document.querySelectorAll(
-    ".reveal, .reveal-blur, .tilt-in, .media-reveal, .proof-item, .footer-wordmark"
+    ".reveal, .reveal-blur, .tilt-in, .media-reveal, .proof-item"
   );
 
   const parentCount = new Map();
@@ -132,7 +143,7 @@
     const n = parentCount.get(parent) || 0;
     parentCount.set(parent, n + 1);
     const delay = Math.min(n * 90, 360);
-    if (delay && !el.classList.contains("footer-wordmark")) {
+    if (delay) {
       el.style.setProperty("--reveal-delay", delay + "ms");
     }
   });
@@ -165,11 +176,75 @@
     requestAnimationFrame(() => body.classList.add("is-loaded"))
   );
 
+  const carousel = document.querySelector("[data-hero-carousel]");
+  if (carousel) {
+    const slides = [...carousel.querySelectorAll("[data-hero-slide]")];
+    const controls = [...carousel.querySelectorAll("[data-hero-control]")];
+    const playback = carousel.querySelector("[data-hero-playback]");
+    let activeIndex = 0;
+    let carouselTimer = null;
+    let userPaused = false;
+
+    const showSlide = (index) => {
+      activeIndex = index;
+      slides.forEach((slide, i) => {
+        slide.classList.toggle("is-active", i === index);
+        slide.setAttribute("aria-hidden", String(i !== index));
+      });
+      controls.forEach((control, i) => {
+        control.classList.toggle("is-active", i === index);
+        if (i === index) control.setAttribute("aria-current", "true");
+        else control.removeAttribute("aria-current");
+      });
+    };
+
+    const stopCarousel = () => {
+      clearInterval(carouselTimer);
+      carouselTimer = null;
+    };
+    const startCarousel = (requestedPlayback = false) => {
+      if (reduceMotion || userPaused || document.hidden || carouselTimer || slides.length < 2) return;
+      if (!requestedPlayback && (carousel.matches(":hover") || carousel.contains(document.activeElement))) return;
+      carouselTimer = setInterval(() => showSlide((activeIndex + 1) % slides.length), 6200);
+    };
+
+    if (playback) {
+      if (reduceMotion) playback.remove();
+      else playback.addEventListener("click", () => {
+        userPaused = !userPaused;
+        playback.textContent = userPaused ? "Play" : "Pause";
+        const label = userPaused ? "Play slideshow" : "Pause slideshow";
+        playback.setAttribute("aria-label", label);
+        playback.title = label;
+        stopCarousel();
+        startCarousel(!userPaused);
+      });
+    }
+    controls.forEach((control, index) => {
+      control.addEventListener("click", () => {
+        showSlide(index);
+        stopCarousel();
+        startCarousel();
+      });
+    });
+    carousel.addEventListener("mouseenter", stopCarousel);
+    carousel.addEventListener("mouseleave", () => startCarousel());
+    carousel.addEventListener("focusin", stopCarousel);
+    carousel.addEventListener("focusout", (event) => {
+      if (!carousel.contains(event.relatedTarget)) startCarousel();
+    });
+    document.addEventListener("visibilitychange", () => document.hidden ? stopCarousel() : startCarousel());
+    showSlide(0);
+    startCarousel();
+  }
+
   /* ---------------------------------------------------------------
      Scroll-driven effects: header state, parallax, progress bar.
      All batched into a single rAF tick.
   --------------------------------------------------------------- */
   const header = document.querySelector(".site-header");
+  const homeHero = document.querySelector(".page-main > .hero:not(.project-hero)");
+  const homeHeroMedia = homeHero?.querySelector(".hero-media");
   let progressBar = null;
   if (!reduceMotion) {
     progressBar = document.createElement("div");
@@ -202,6 +277,17 @@
     requestAnimationFrame(() => {
       const y = window.scrollY || window.pageYOffset;
 
+      if (homeHeroMedia && window.innerWidth > 680 && !reduceMotion) {
+        const progress = Math.min(y / Math.max(homeHero.offsetHeight * 0.7, 1), 1);
+        homeHeroMedia.style.inset = `${Math.round(progress * 24)}px ${Math.round(progress * 28)}px ${Math.round(progress * 32)}px`;
+        homeHeroMedia.style.borderRadius = `${Math.round(progress * 8)}px`;
+        homeHeroMedia.style.boxShadow = progress > 0.25 ? "0 20px 44px rgba(15, 25, 38, 0.17)" : "none";
+      } else if (homeHeroMedia) {
+        homeHeroMedia.style.removeProperty("inset");
+        homeHeroMedia.style.removeProperty("border-radius");
+        homeHeroMedia.style.removeProperty("box-shadow");
+      }
+
       if (mobileCta && pageHero) {
         const heroEnd = pageHero.offsetTop + pageHero.offsetHeight;
         mobileCta.classList.toggle("before-hero", y < heroEnd - window.innerHeight * 0.5);
@@ -231,6 +317,7 @@
     });
   };
   window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
   onScroll();
 
   /* ---------------------------------------------------------------
