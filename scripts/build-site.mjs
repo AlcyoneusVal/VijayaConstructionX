@@ -1,7 +1,7 @@
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
-import { ArrowRight, Phone, MessageCircle, MapPin, Clock, Shield, KeyRound, PanelsTopLeft, Pause, Play, Check } from "lucide-static";
+import { ArrowRight, Phone, MessageCircle, MapPin, Clock, Shield, KeyRound, PanelsTopLeft, Check } from "lucide-static";
 
 const ROOT = path.resolve(".");
 const OUTPUT_DIR = path.resolve(process.env.VIJAYA_OUTPUT_DIR || ".");
@@ -55,7 +55,7 @@ function previewCopy(current, allEdits) {
 const icons = Object.fromEntries(Object.entries({
   arrow: ArrowRight, phone: Phone, chat: MessageCircle, pin: MapPin,
   clock: Clock, shield: Shield, key: KeyRound, plan: PanelsTopLeft,
-  pause: Pause, play: Play, check: Check,
+  check: Check,
 }).map(([name, svg]) => [name, svg.replace("<svg", '<svg aria-hidden="true" focusable="false"').trim()]));
 
 const ongoingProjects = [
@@ -74,12 +74,10 @@ const ongoingProjects = [
     heroImage: "ashiyana-aerial",
     heroSummary: "A new address on Rajgarh Link Road. Planned rooftop leisure, thoughtfully designed homes, and a December 2029 completion target.",
     heroScenes: [
-      ["ashiyana-aerial-golden", "Golden hour", "Planned Vijaya Ashiyana tower and rooftop in golden-hour light", "65% 45%"],
-      ["ashiyana-driveway-sunset", "Sunset arrival", "Planned Vijaya Ashiyana front elevation and driveway at sunset", "68% 45%"],
-      ["ashiyana-aerial-blue-hour", "Blue hour", "Planned Vijaya Ashiyana tower and rooftop at blue hour", "65% 45%"],
-      ["ashiyana-pool-deck-dusk", "Pool deck", "Planned Vijaya Ashiyana pool and leisure deck at dusk", "65% 50%"],
-      ["ashiyana-aerial", "Daylight aerial", "Planned Vijaya Ashiyana tower and rooftop in daylight", "65% 45%"],
-      ["ashiyana-rooftop-pool-aerial", "Rooftop aerial", "Planned Vijaya Ashiyana rooftop pool and recreation deck from above", "65% 45%"],
+      ["ashiyana-aerial-golden", "Tower view", "Planned Vijaya Ashiyana tower and rooftop overview", "65% 45%"],
+      ["ashiyana-driveway-sunset", "Arrival view", "Planned Vijaya Ashiyana front elevation and arrival driveway", "68% 45%"],
+      ["ashiyana-pool-deck-dusk", "Rooftop pool", "Planned Vijaya Ashiyana rooftop pool and leisure deck", "65% 50%"],
+      ["ashiyana-facade-detail", "Balcony detail", "Planned Vijaya Ashiyana upper balconies and triangular pediment, viewed from below", "68% 45%"],
     ],
     brochurePage: "ashiyana-brochure.html",
     brochurePdf: "vijaya-ashiyana.pdf",
@@ -95,8 +93,6 @@ const ongoingProjects = [
       ["Central Guwahati", "A location positioned for buyers searching apartments in Guwahati."],
     ],
     gallery: [
-      ["ashiyana-hero", "Drive Way View"],
-      ["ashiyana-aerial", "Aerial View"],
       ["ashiyana-gate", "Entrance Gate"],
       ["ashiyana-rooftop", "Rooftop Amenities Plan"],
       ["ashiyana-garden", "Landscaped Garden"],
@@ -124,9 +120,8 @@ const ongoingProjects = [
     heroImage: "sterling-heights-hero",
     heroSummary: "A signature residential address in Kerakuchi, Guwahati. Sold out, with completion currently targeted for December 2026.",
     heroScenes: [
-      ["sterling-heights-golden", "Golden hour", "Planned Vijaya Sterling Heights entrance and tower in golden-hour light", "68% 45%"],
-      ["sterling-heights-hero", "Daylight arrival", "Planned Vijaya Sterling Heights entrance and tower in daylight", "65% 32%"],
-      ["sterling-heights-view", "Street elevation", "Planned Vijaya Sterling Heights street elevation in daylight", "65% 40%"],
+      ["sterling-heights-golden", "Gated entrance", "Planned Vijaya Sterling Heights gated entrance and residential building", "68% 45%"],
+      ["sterling-heights-view", "Street view", "Planned Vijaya Sterling Heights residential building from the street", "65% 40%"],
     ],
     brochurePage: "sterling-heights-brochure.html",
     brochurePdf: "vijaya-sterling-heights.pdf",
@@ -140,7 +135,6 @@ const ongoingProjects = [
       ["Developer record", "Backed by Vijaya's 22 completed projects across Assam."],
     ],
     gallery: [
-      ["sterling-heights-hero", "Vijaya Sterling Heights architectural rendering"],
       ["sterling-heights-view", "Vijaya Sterling Heights street elevation rendering"],
     ],
   },
@@ -159,8 +153,8 @@ const ongoingProjects = [
     heroImage: "sapphire-hero",
     heroSummary: "Residences and commercial spaces in Kachari Gaon, Tezpur. A distinctive city address with a December 2026 completion target.",
     heroScenes: [
-      ["sapphire-blue-hour", "Blue hour", "Planned Vijaya Sapphire residences and commercial frontage at blue hour", "64% 45%"],
-      ["sapphire-hero", "Evening arrival", "Planned Vijaya Sapphire facade and commercial frontage in evening light", "60% 35%"],
+      ["sapphire-blue-hour", "Homes & retail", "Planned Vijaya Sapphire residences and commercial frontage", "64% 45%"],
+      ["sapphire-podium-detail", "Street frontage", "Planned Vijaya Sapphire commercial corner and diamond-lattice frontage, viewed from street level", "64% 50%"],
     ],
     brochurePage: "sapphire-brochure.html",
     brochurePdf: "vijaya-sapphire.pdf",
@@ -173,7 +167,7 @@ const ongoingProjects = [
       ["Tezpur location", "A dedicated option for homebuyers looking beyond Guwahati."],
       ["Developer record", "Delivered by the same team behind Vijaya's Guwahati portfolio."],
     ],
-    gallery: [["sapphire-hero", "Vijaya Sapphire architectural rendering in Tezpur"]],
+    gallery: [],
   },
 ];
 
@@ -826,7 +820,7 @@ function homePage() {
     children: `<section class="hero project-showcase" data-hero-current="${initialProject.slug}">
   <div class="hero-media" data-hero-carousel aria-label="Views of planned Vijaya Ashiyana">
     <img class="hero-slide is-active" data-hero-frame src="${initialScene.src}" srcset="${initialScene.srcset}" sizes="${initialScene.sizes}" style="object-position:${initialScene.position}" alt="${initialScene.alt}" fetchpriority="high" loading="eager" decoding="async">
-    <div class="hero-carousel-controls" role="group" aria-label="Project views"><span class="hero-view-label" data-hero-view-label>${initialScene.label}</span><div class="hero-view-buttons" data-hero-controls>${initialProject.scenes.map((scene, index) => `<button type="button" ${index === 0 ? 'class="is-active" aria-current="true"' : ""} data-hero-control="${index}" aria-label="Show ${scene.label.toLowerCase()}" title="${scene.label}"></button>`).join("")}</div><button type="button" data-hero-playback aria-label="Pause slideshow" title="Pause slideshow"><span data-hero-pause-icon>${icons.pause}</span><span data-hero-play-icon hidden>${icons.play}</span></button></div>
+    <div class="hero-carousel-controls" role="group" aria-label="Project views"><span class="hero-view-label" data-hero-view-label>${initialScene.label}</span><div class="hero-view-buttons" data-hero-controls>${initialProject.scenes.map((scene, index) => `<button type="button" ${index === 0 ? 'class="is-active" aria-current="true"' : ""} data-hero-control="${index}" aria-label="Show ${scene.label.toLowerCase()}" title="${scene.label}"></button>`).join("")}</div></div>
   </div>
   <div class="hero-content">
     <div class="hero-introduction">
@@ -989,8 +983,8 @@ function projectPage(project) {
   const galleryImages = project.gallery || [[project.image, project.name]];
   const extraViews = (project.heroScenes || [])
     .filter(([image]) => !galleryImages.some(([existing]) => existing === image))
-    .map(([image, label, alt]) => [image, `${alt} (${label})`]);
-  const gallery = [...galleryImages, ...extraViews]
+    .map(([image, , alt]) => [image, alt]);
+  const gallery = [...extraViews, ...galleryImages]
     .map(([img, caption], index) => `<figure class="gallery-item ${index === 0 ? "large" : ""} reveal"><img src="${imagePath(prefix, img)}" alt="${escapeHtml(caption)}" loading="${index === 0 ? "eager" : "lazy"}"><figcaption class="gallery-caption">${escapeHtml(caption)}</figcaption></figure>`)
     .join("");
   const amenities = (project.amenities || [

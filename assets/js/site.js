@@ -183,7 +183,6 @@
     const projectLinks = [...hero.querySelectorAll("[data-hero-project]")];
     const desktop = window.matchMedia("(min-width: 981px)");
     const controls = carousel.querySelector("[data-hero-controls]");
-    const playback = carousel.querySelector("[data-hero-playback]");
     const announcement = hero.querySelector("[data-hero-announcement]");
     const frames = [carousel.querySelector("[data-hero-frame]"), document.createElement("img")];
     frames[1].className = "hero-slide";
@@ -195,7 +194,7 @@
     let activeProject = projects[0];
     let activeIndex = 0;
     let carouselTimer = null;
-    let userPaused = Boolean(navigator.connection?.saveData);
+    let autoplayDisabled = Boolean(navigator.connection?.saveData);
     let inView = true;
     let requestId = 0;
 
@@ -250,12 +249,11 @@
       clearTimeout(carouselTimer);
       carouselTimer = null;
     };
-    const startCarousel = (requestedPlayback = false) => {
-      if (reduceMotion || userPaused || document.hidden || !inView || carouselTimer || activeProject.scenes.length < 2) return;
+    const startCarousel = () => {
+      if (reduceMotion || autoplayDisabled || document.hidden || !inView || carouselTimer || activeProject.scenes.length < 2) return;
       const keyboardFocus = hero.contains(document.activeElement) && document.activeElement.matches(":focus-visible");
-      if (!requestedPlayback && document.activeElement !== playback &&
-          (keyboardFocus || hero.querySelector(".hero-panel").matches(":hover") ||
-            carousel.querySelector(".hero-carousel-controls").matches(":hover"))) return;
+      if (keyboardFocus || hero.querySelector(".hero-panel").matches(":hover") ||
+          carousel.querySelector(".hero-carousel-controls").matches(":hover")) return;
       carouselTimer = setTimeout(() => {
         carouselTimer = null;
         showScene(activeProject, (activeIndex + 1) % activeProject.scenes.length);
@@ -295,9 +293,8 @@
         if (announce) announcement.textContent = `${project.name} selected. ${project.status}. ${scene.label}.`;
       } catch {
         if (id !== requestId) return;
-        userPaused = true;
+        autoplayDisabled = true;
         announcement.textContent = "This view could not load. The previous project view is still available.";
-        updatePlayback();
       }
       if (id === requestId) {
         hero.removeAttribute("aria-busy");
@@ -305,24 +302,6 @@
       }
     };
 
-    const updatePlayback = () => {
-      playback.querySelector("[data-hero-pause-icon]").hidden = userPaused;
-      playback.querySelector("[data-hero-play-icon]").hidden = !userPaused;
-      const label = userPaused ? "Play slideshow" : "Pause slideshow";
-      playback.setAttribute("aria-label", label);
-      playback.title = label;
-    };
-
-    if (playback) {
-      if (reduceMotion) playback.hidden = true;
-      else playback.addEventListener("click", () => {
-        userPaused = !userPaused;
-        updatePlayback();
-        stopCarousel();
-        startCarousel(!userPaused);
-      });
-      updatePlayback();
-    }
     controls.addEventListener("click", (event) => {
       const button = event.target.closest("[data-hero-control]");
       if (button) showScene(activeProject, Number(button.dataset.heroControl));

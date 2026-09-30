@@ -412,7 +412,7 @@ button {
   display: none;
   align-items: center;
   gap: 10px;
-  padding: 0 8px 0 14px;
+  padding: 0 14px;
   border-radius: 4px;
   background: rgba(12, 20, 31, 0.38);
   backdrop-filter: blur(6px);
@@ -455,23 +455,6 @@ html.js .hero-carousel-controls {
 .hero-carousel-controls [data-hero-control]:is(.is-active, :hover, :focus-visible)::after {
   background: #fff;
   transform: scaleY(1.5);
-}
-
-.hero-carousel-controls [data-hero-playback] {
-  width: 44px;
-  padding: 10px;
-  border-left: 1px solid rgba(255, 255, 255, 0.3);
-  color: #fff;
-}
-
-.hero-carousel-controls [hidden] {
-  display: none;
-}
-
-.hero-carousel-controls svg {
-  display: block;
-  width: 18px;
-  height: 18px;
 }
 
 .hero-media img {
