@@ -14,9 +14,7 @@
   --gold-dark: #87632f;
   --blue: #1b6da7;
   --blue-dark: #154f7c;
-  --teal: #2a9ec4;
   --violet: #473a92;
-  --green: #55725d;
   --whatsapp: #25d366;
   --whatsapp-dark: #1fb457;
   --shadow: 0 26px 76px rgba(21, 24, 39, 0.14);
@@ -170,13 +168,33 @@ button {
   display: flex;
   flex-direction: column;
   gap: 1px;
+  transition: opacity 380ms ease, transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .brand-name {
   font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: 0.065em;
+  font-weight: 750;
+  letter-spacing: 0;
   text-transform: uppercase;
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 981px) {
+  .brand:is(:hover, :focus-visible) .brand-text {
+    opacity: 0;
+    transform: translateX(4px);
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .brand-place {
@@ -392,8 +410,9 @@ button {
   top: 22px;
   right: 26px;
   display: none;
-  gap: 7px;
-  padding: 2px 8px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 0 14px;
   border-radius: 4px;
   background: rgba(12, 20, 31, 0.38);
   backdrop-filter: blur(6px);
@@ -405,11 +424,24 @@ html.js .hero-carousel-controls {
 
 .hero-carousel-controls button {
   width: 30px;
-  height: 32px;
+  height: 44px;
   padding: 14px 0;
   border: 0;
   background: none;
   cursor: pointer;
+  color: #fff;
+}
+
+.hero-view-label {
+  min-width: 88px;
+  color: #fff;
+  font-size: 0.73rem;
+  font-weight: 500;
+}
+
+.hero-view-buttons {
+  display: flex;
+  gap: 5px;
 }
 
 .hero-carousel-controls [data-hero-control]::after {
@@ -427,10 +459,19 @@ html.js .hero-carousel-controls {
 
 .hero-carousel-controls [data-hero-playback] {
   width: 44px;
-  padding: 0 0 0 8px;
+  padding: 10px;
   border-left: 1px solid rgba(255, 255, 255, 0.3);
   color: #fff;
-  font: 650 0.68rem "Inter", sans-serif;
+}
+
+.hero-carousel-controls [hidden] {
+  display: none;
+}
+
+.hero-carousel-controls svg {
+  display: block;
+  width: 18px;
+  height: 18px;
 }
 
 .hero-media img {
@@ -487,6 +528,44 @@ html.js .hero-carousel-controls {
   color: rgba(255, 255, 255, 0.84);
 }
 
+.project-showcase h1 {
+  min-height: 2.08em;
+  font-size: 5rem;
+  line-height: 1.04;
+}
+
+.project-showcase h1 [data-hero-name] {
+  display: block;
+}
+
+.hero-introduction {
+  min-width: 0;
+}
+
+.hero-location {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin: 0 0 18px;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-sales-status {
+  padding-left: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+.project-showcase .hero-copy {
+  max-width: 570px;
+  min-height: 4.5em;
+  font-size: 1.03rem;
+  line-height: 1.5;
+}
+
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -514,16 +593,10 @@ html.js .hero-carousel-controls {
 }
 
 .hero-panel h2 {
-  margin: 0 0 8px;
+  margin: 0 0 18px;
   font-size: 0.9rem;
   letter-spacing: 0.11em;
   text-transform: uppercase;
-}
-
-.hero-panel p {
-  margin: 0 0 18px;
-  color: var(--ink-soft);
-  font-size: 0.92rem;
 }
 
 .mini-project-list {
@@ -533,16 +606,51 @@ html.js .hero-carousel-controls {
 
 .mini-project {
   display: grid;
-  grid-template-columns: 74px 1fr;
+  grid-template-columns: 74px minmax(0, 1fr) 18px;
   gap: 12px;
   align-items: center;
   min-width: 0;
-  padding: 8px;
+  min-height: 88px;
+  padding: 10px;
   border: 1px solid rgba(221, 227, 238, 0.98);
   border-radius: var(--radius);
   text-decoration: none;
   background: #fff;
   transition: border-color 240ms ease, transform 280ms var(--ease-cine), box-shadow 240ms ease;
+}
+
+.mini-project-copy small {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 0.68rem;
+  line-height: 1.3;
+}
+
+.mini-project .mini-project-selected {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--blue);
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.mini-project-selected svg {
+  width: 18px;
+  height: 18px;
+}
+
+.is-project-selector .mini-project[aria-pressed="true"] {
+  border-color: rgba(27, 109, 167, 0.5);
+  background: #f3f8fa;
+  box-shadow: inset 3px 0 var(--blue);
+}
+
+.is-project-selector .mini-project[aria-pressed="true"] .mini-project-selected {
+  opacity: 1;
 }
 
 .mini-project:hover {
@@ -1007,6 +1115,7 @@ html.js .hero-carousel-controls {
 
 .lead-form label {
   display: grid;
+  align-content: start;
   gap: 10px;
   color: #303948;
   font-size: 0.88rem;
@@ -2656,7 +2765,7 @@ html.js .reveal.is-visible {
 
   .brand-name {
     font-size: 0.7rem;
-    letter-spacing: 0.052em;
+    letter-spacing: 0;
     max-width: min(210px, calc(100vw - 138px));
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2691,15 +2800,34 @@ html.js .reveal.is-visible {
   }
 
   .hero-carousel-controls {
-    top: 12px;
+    top: auto;
+    bottom: 12px;
     right: 12px;
-    gap: 4px;
-    padding: 1px 6px;
+    gap: 6px;
+    padding: 0 6px;
   }
 
   .hero-carousel-controls button {
     width: 26px;
-    height: 32px;
+    height: 44px;
+  }
+
+  .hero-view-label {
+    display: none;
+  }
+
+  .hero-view-buttons {
+    gap: 4px;
+  }
+
+  .hero-location {
+    color: var(--ink-soft);
+    font-size: 0.76rem;
+    margin-bottom: 14px;
+  }
+
+  .hero-sales-status {
+    border-color: var(--line);
   }
 
   .hero-media img {
@@ -2722,6 +2850,15 @@ html.js .reveal.is-visible {
     color: var(--ink);
     font-size: clamp(2.35rem, 11vw, 3.55rem);
     line-height: 1;
+  }
+
+  .project-showcase h1 {
+    font-size: 3rem;
+  }
+
+  .project-showcase .hero-copy {
+    min-height: 0;
+    font-size: 0.96rem;
   }
 
   .hero-copy {
@@ -2838,18 +2975,9 @@ html.js .reveal.is-visible {
 
 :root {
   --ease-cine: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
   --gold-grad: linear-gradient(135deg, #d6a85a 0%, #b38742 48%, #8a6630 100%);
   --blue-grad: linear-gradient(135deg, #2a8fc9 0%, #1b6da7 52%, #154f7c 100%);
-  --glass: rgba(255, 255, 255, 0.72);
-  --ring: 0 0 0 1px rgba(21, 24, 39, 0.06);
   --shadow-lift: 0 40px 90px -30px rgba(21, 24, 39, 0.42);
-}
-
-/* ---- Native cursor ------------------------------------------------ */
-.cursor-dot,
-.cursor-ring {
-  display: none !important;
 }
 
 /* ---- Header: refined scrolled state ------------------------------ */
@@ -3012,6 +3140,10 @@ html.js .footer-wordmark.is-visible {
 }
 
 @media (max-width: 1100px) {
+  .project-showcase h1 {
+    font-size: 4rem;
+  }
+
   .footer-wordmark {
     font-size: 3.6rem;
   }
@@ -3047,11 +3179,6 @@ body.variant-all-edits-preview .site-footer .reveal-blur {
   transform: none !important;
   filter: none !important;
   opacity: 1 !important;
-}
-
-/* ---- Section entrance accent line ------------------------------- */
-.section-head .section-heading {
-  position: relative;
 }
 
 /* ---- Scroll progress bar ---------------------------------------- */
@@ -3094,10 +3221,6 @@ body.variant-all-edits-preview .site-footer .reveal-blur {
     padding: 16px 18px;
   }
 
-  .hero:not(.project-hero) .hero-panel p {
-    display: none;
-  }
-
   .hero:not(.project-hero) .mini-project-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -3109,6 +3232,10 @@ body.variant-all-edits-preview .site-footer .reveal-blur {
   }
 
   .hero:not(.project-hero) .mini-project img {
+    display: none;
+  }
+
+  .hero:not(.project-hero) .mini-project-selected {
     display: none;
   }
 }
@@ -3131,6 +3258,7 @@ body.variant-all-edits-preview .site-footer .reveal-blur {
   html.js .hero-media img {
     transform: none !important;
     clip-path: none !important;
+    transition: none !important;
   }
   html.js .footer-wordmark {
     transform: none !important;
@@ -3143,6 +3271,11 @@ body.variant-all-edits-preview .site-footer .reveal-blur {
     transform: none !important;
     transition: none !important;
   }
+  .brand-text {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
   .scroll-progress,
   .btn::after {
     display: none !important;
@@ -3150,6 +3283,10 @@ body.variant-all-edits-preview .site-footer .reveal-blur {
 }
 
 @media (max-width: 680px) {
+  .project-showcase h1 {
+    font-size: 3rem;
+  }
+
   .hero:not(.project-hero) .hero-panel {
     display: none;
   }
@@ -3160,6 +3297,10 @@ body.variant-all-edits-preview .site-footer .reveal-blur {
 }
 
 @media (max-width: 360px) {
+  .project-showcase h1 {
+    font-size: 2.5rem;
+  }
+
   .hero-media {
     height: 180px;
   }

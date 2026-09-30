@@ -176,64 +176,195 @@
   );
 
   const carousel = document.querySelector("[data-hero-carousel]");
-  if (carousel) {
-    const slides = [...carousel.querySelectorAll("[data-hero-slide]")];
-    const controls = [...carousel.querySelectorAll("[data-hero-control]")];
+  const projectData = document.querySelector("[data-hero-projects]");
+  if (carousel && projectData) {
+    const hero = carousel.closest(".hero");
+    const projects = JSON.parse(projectData.textContent);
+    const projectLinks = [...hero.querySelectorAll("[data-hero-project]")];
+    const desktop = window.matchMedia("(min-width: 981px)");
+    const controls = carousel.querySelector("[data-hero-controls]");
     const playback = carousel.querySelector("[data-hero-playback]");
+    const announcement = hero.querySelector("[data-hero-announcement]");
+    const frames = [carousel.querySelector("[data-hero-frame]"), document.createElement("img")];
+    frames[1].className = "hero-slide";
+    frames[1].dataset.heroFrame = "";
+    frames[1].alt = "";
+    frames[1].setAttribute("aria-hidden", "true");
+    carousel.insertBefore(frames[1], carousel.querySelector(".hero-carousel-controls"));
+    let activeFrame = 0;
+    let activeProject = projects[0];
     let activeIndex = 0;
     let carouselTimer = null;
-    let userPaused = false;
+    let userPaused = Boolean(navigator.connection?.saveData);
+    let inView = true;
+    let requestId = 0;
 
-    const showSlide = (index) => {
-      activeIndex = index;
-      slides.forEach((slide, i) => {
-        slide.classList.toggle("is-active", i === index);
-        slide.setAttribute("aria-hidden", String(i !== index));
+    const updateSelection = () => {
+      hero.classList.toggle("is-project-selector", desktop.matches);
+      projectLinks.forEach((link) => {
+        if (desktop.matches) {
+          link.setAttribute("role", "button");
+          link.setAttribute("aria-pressed", String(link.dataset.heroProject === activeProject.slug));
+          link.setAttribute("aria-controls", "hero-project-title");
+        } else {
+          link.removeAttribute("role");
+          link.removeAttribute("aria-pressed");
+          link.removeAttribute("aria-controls");
+        }
       });
-      controls.forEach((control, i) => {
-        control.classList.toggle("is-active", i === index);
-        if (i === index) control.setAttribute("aria-current", "true");
+    };
+
+    const updateProject = (project) => {
+      hero.dataset.heroCurrent = project.slug;
+      hero.querySelector("[data-hero-name]").textContent = project.displayName;
+      hero.querySelector("[data-hero-location]").textContent = project.location;
+      hero.querySelector("[data-hero-sales-status]").textContent = project.status;
+      hero.querySelector("[data-hero-copy]").textContent = project.summary;
+      const explore = hero.querySelector("[data-hero-explore]");
+      explore.href = project.url;
+      explore.querySelector("span").textContent = project.exploreLabel;
+      hero.querySelector("[data-hero-whatsapp]").href = project.whatsapp;
+      carousel.setAttribute("aria-label", `Views of planned ${project.name}`);
+      const buttons = project.scenes.map((scene, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.heroControl = String(index);
+        button.setAttribute("aria-label", `Show ${scene.label.toLowerCase()}`);
+        button.title = scene.label;
+        return button;
+      });
+      controls.replaceChildren(...buttons);
+      updateSelection();
+    };
+
+    const updateControls = () => {
+      controls.querySelectorAll("button").forEach((control, i) => {
+        control.classList.toggle("is-active", i === activeIndex);
+        if (i === activeIndex) control.setAttribute("aria-current", "true");
         else control.removeAttribute("aria-current");
       });
+      hero.querySelector("[data-hero-view-label]").textContent = activeProject.scenes[activeIndex].label;
     };
 
     const stopCarousel = () => {
-      clearInterval(carouselTimer);
+      clearTimeout(carouselTimer);
       carouselTimer = null;
     };
     const startCarousel = (requestedPlayback = false) => {
-      if (reduceMotion || userPaused || document.hidden || carouselTimer || slides.length < 2) return;
-      if (!requestedPlayback && (carousel.matches(":hover") || carousel.contains(document.activeElement))) return;
-      carouselTimer = setInterval(() => showSlide((activeIndex + 1) % slides.length), 6200);
+      if (reduceMotion || userPaused || document.hidden || !inView || carouselTimer || activeProject.scenes.length < 2) return;
+      const keyboardFocus = hero.contains(document.activeElement) && document.activeElement.matches(":focus-visible");
+      if (!requestedPlayback && document.activeElement !== playback &&
+          (keyboardFocus || hero.querySelector(".hero-panel").matches(":hover") ||
+            carousel.querySelector(".hero-carousel-controls").matches(":hover"))) return;
+      carouselTimer = setTimeout(() => {
+        carouselTimer = null;
+        showScene(activeProject, (activeIndex + 1) % activeProject.scenes.length);
+      }, 6800);
+    };
+
+    // Decode before swapping; a late image request must not override a newer selection.
+    const showScene = async (project, index, announce = false) => {
+      const id = ++requestId;
+      const scene = project.scenes[index];
+      stopCarousel();
+      hero.setAttribute("aria-busy", "true");
+      const image = new Image();
+      image.sizes = scene.sizes;
+      image.srcset = scene.srcset;
+      image.src = scene.src;
+      try {
+        await image.decode();
+        if (id !== requestId) return;
+        const nextFrame = 1 - activeFrame;
+        const frame = frames[nextFrame];
+        frame.sizes = scene.sizes;
+        frame.srcset = scene.srcset;
+        frame.src = scene.src;
+        frame.alt = scene.alt;
+        frame.style.objectPosition = scene.position;
+        frame.setAttribute("aria-hidden", "false");
+        frame.classList.add("is-active");
+        frames[activeFrame].classList.remove("is-active");
+        frames[activeFrame].setAttribute("aria-hidden", "true");
+        activeFrame = nextFrame;
+        const changedProject = activeProject.slug !== project.slug;
+        activeProject = project;
+        activeIndex = index;
+        if (changedProject) updateProject(project);
+        updateControls();
+        if (announce) announcement.textContent = `${project.name} selected. ${project.status}. ${scene.label}.`;
+      } catch {
+        if (id !== requestId) return;
+        userPaused = true;
+        announcement.textContent = "This view could not load. The previous project view is still available.";
+        updatePlayback();
+      }
+      if (id === requestId) {
+        hero.removeAttribute("aria-busy");
+        startCarousel();
+      }
+    };
+
+    const updatePlayback = () => {
+      playback.querySelector("[data-hero-pause-icon]").hidden = userPaused;
+      playback.querySelector("[data-hero-play-icon]").hidden = !userPaused;
+      const label = userPaused ? "Play slideshow" : "Pause slideshow";
+      playback.setAttribute("aria-label", label);
+      playback.title = label;
     };
 
     if (playback) {
-      if (reduceMotion) playback.remove();
+      if (reduceMotion) playback.hidden = true;
       else playback.addEventListener("click", () => {
         userPaused = !userPaused;
-        playback.textContent = userPaused ? "Play" : "Pause";
-        const label = userPaused ? "Play slideshow" : "Pause slideshow";
-        playback.setAttribute("aria-label", label);
-        playback.title = label;
+        updatePlayback();
         stopCarousel();
         startCarousel(!userPaused);
       });
+      updatePlayback();
     }
-    controls.forEach((control, index) => {
-      control.addEventListener("click", () => {
-        showSlide(index);
-        stopCarousel();
-        startCarousel();
+    controls.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-hero-control]");
+      if (button) showScene(activeProject, Number(button.dataset.heroControl));
+    });
+    projectLinks.forEach((link) => {
+      const select = () => showScene(projects.find((project) => project.slug === link.dataset.heroProject), 0, true);
+      link.addEventListener("click", (event) => {
+        if (!desktop.matches || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        select();
+      });
+      link.addEventListener("keydown", (event) => {
+        if (desktop.matches && event.key === " ") {
+          event.preventDefault();
+          select();
+        }
       });
     });
-    carousel.addEventListener("mouseenter", stopCarousel);
-    carousel.addEventListener("mouseleave", () => startCarousel());
-    carousel.addEventListener("focusin", stopCarousel);
-    carousel.addEventListener("focusout", (event) => {
-      if (!carousel.contains(event.relatedTarget)) startCarousel();
+    hero.querySelectorAll(".hero-panel, .hero-carousel-controls").forEach((surface) => {
+      surface.addEventListener("mouseenter", stopCarousel);
+      surface.addEventListener("mouseleave", () => startCarousel());
     });
+    hero.addEventListener("focusin", stopCarousel);
+    hero.addEventListener("focusout", () => requestAnimationFrame(() => startCarousel()));
+    desktop.addEventListener("change", () => {
+      requestId++;
+      hero.removeAttribute("aria-busy");
+      updateSelection();
+      if (!desktop.matches && activeProject.slug !== projects[0].slug) showScene(projects[0], 0);
+      else startCarousel();
+    });
+    if ("IntersectionObserver" in window) {
+      const heroObserver = new IntersectionObserver(([entry]) => {
+        inView = entry.isIntersecting;
+        if (inView) startCarousel();
+        else stopCarousel();
+      }, { threshold: 0.05 });
+      heroObserver.observe(hero);
+    }
     document.addEventListener("visibilitychange", () => document.hidden ? stopCarousel() : startCarousel());
-    showSlide(0);
+    updateProject(activeProject);
+    updateControls();
     startCarousel();
   }
 

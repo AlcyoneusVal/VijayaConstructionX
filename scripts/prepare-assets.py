@@ -16,7 +16,6 @@ def src(name: str) -> Path:
 
 
 ASSETS = {
-    "home-hero": ("PHOTO-2026-04-18-09-58-58.jpg", 0.025, 1800),
     "ashiyana-hero": ("PHOTO-2026-04-18-09-58-58.jpg", 0.025, 1800),
     "ashiyana-tower": ("PHOTO-2026-04-18-09-58-13.jpg", 0.03, 1800),
     "ashiyana-aerial": ("PHOTO-2026-04-18-10-01-32.jpg", 0.025, 1800),
@@ -48,7 +47,6 @@ ASSETS = {
     "residency-photo": ("PHOTO-2026-04-18-09-40-03.jpg", 0.0, 1400),
     "orchid-render": ("PHOTO-2026-04-18-11-27-58.jpg", 0.025, 1600),
     "orchid-photo": ("PHOTO-2026-04-18-11-28-26.jpg", 0.0, 1400),
-    "classic-render": ("PHOTO-2026-04-18-12-34-33.jpg", 0.025, 900),
     "classic-photo": ("PHOTO-2026-04-18-12-32-50.jpg", 0.0, 1400),
     "royal-crest-render": ("PHOTO-2026-04-18-16-12-31.jpg", 0.025, 1600),
     "royal-crest-photo": ("PHOTO-2026-04-18-16-11-59.jpg", 0.0, 1400),
@@ -66,7 +64,6 @@ ASSETS = {
     "emerald-photo": ("PHOTO-2026-04-18-16-36-36.jpg", 0.0, 1400),
     "eternity-render": ("PHOTO-2026-04-18-16-38-04.jpg", 0.025, 1600),
     "imperial-towers-day": ("PHOTO-2026-04-18-16-41-28.jpg", 0.025, 1600),
-    "imperial-towers-night": ("PHOTO-2026-04-18-16-41-46.jpg", 0.04, 1600),
     "imperial-towers-photo": ("PHOTO-2026-04-18-16-39-01.jpg", 0.0, 1400),
     "golden-orchid-day": ("PHOTO-2026-04-18-16-48-47.jpg", 0.025, 1700),
     "golden-orchid-night": ("PHOTO-2026-04-18-16-49-06.jpg", 0.04, 1700),

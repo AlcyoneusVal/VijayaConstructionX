@@ -1,6 +1,7 @@
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
+import { ArrowRight, Phone, MessageCircle, MapPin, Clock, Shield, KeyRound, PanelsTopLeft, Pause, Play, Check } from "lucide-static";
 
 const ROOT = path.resolve(".");
 const OUTPUT_DIR = path.resolve(process.env.VIJAYA_OUTPUT_DIR || ".");
@@ -51,16 +52,11 @@ function previewCopy(current, allEdits) {
   return IS_ALL_EDITS_PREVIEW ? allEdits : current;
 }
 
-const icons = {
-  arrow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>',
-  phone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7A2 2 0 0 1 22 16.9z"></path></svg>',
-  chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.3 8.3 0 0 1-3.8-.9L3 21l1.9-5.7a8.3 8.3 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.5 3H13a8.5 8.5 0 0 1 8 8.5z"></path></svg>',
-  pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>',
-  clock: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>',
-  shield: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
-  key: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 2l-2 2"></path><path d="m15 8 2-2"></path><circle cx="7.5" cy="14.5" r="5.5"></circle><path d="m12 10 8-8"></path></svg>',
-  plan: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v18H3z"></path><path d="M9 3v18"></path><path d="M15 3v8"></path><path d="M9 11h12"></path></svg>',
-};
+const icons = Object.fromEntries(Object.entries({
+  arrow: ArrowRight, phone: Phone, chat: MessageCircle, pin: MapPin,
+  clock: Clock, shield: Shield, key: KeyRound, plan: PanelsTopLeft,
+  pause: Pause, play: Play, check: Check,
+}).map(([name, svg]) => [name, svg.replace("<svg", '<svg aria-hidden="true" focusable="false"').trim()]));
 
 const ongoingProjects = [
   {
@@ -76,6 +72,15 @@ const ongoingProjects = [
     type: "Premium Residential Apartments",
     image: "ashiyana-hero",
     heroImage: "ashiyana-aerial",
+    heroSummary: "A new address on Rajgarh Link Road. Planned rooftop leisure, thoughtfully designed homes, and a December 2029 completion target.",
+    heroScenes: [
+      ["ashiyana-aerial-golden", "Golden hour", "Planned Vijaya Ashiyana tower and rooftop in golden-hour light", "65% 45%"],
+      ["ashiyana-driveway-sunset", "Sunset arrival", "Planned Vijaya Ashiyana front elevation and driveway at sunset", "68% 45%"],
+      ["ashiyana-aerial-blue-hour", "Blue hour", "Planned Vijaya Ashiyana tower and rooftop at blue hour", "65% 45%"],
+      ["ashiyana-pool-deck-dusk", "Pool deck", "Planned Vijaya Ashiyana pool and leisure deck at dusk", "65% 50%"],
+      ["ashiyana-aerial", "Daylight aerial", "Planned Vijaya Ashiyana tower and rooftop in daylight", "65% 45%"],
+      ["ashiyana-rooftop-pool-aerial", "Rooftop aerial", "Planned Vijaya Ashiyana rooftop pool and recreation deck from above", "65% 45%"],
+    ],
     brochurePage: "ashiyana-brochure.html",
     brochurePdf: "vijaya-ashiyana.pdf",
     short: "A high-rise on Rajgarh Link Road with planned rooftop leisure, swimming pool, gymnasium, banquet hall, landscaped open spaces, EV charging, and family amenities.",
@@ -117,6 +122,12 @@ const ongoingProjects = [
     type: "Residential Apartments",
     image: "sterling-heights-hero",
     heroImage: "sterling-heights-hero",
+    heroSummary: "A signature residential address in Kerakuchi, Guwahati. Sold out, with completion currently targeted for December 2026.",
+    heroScenes: [
+      ["sterling-heights-golden", "Golden hour", "Planned Vijaya Sterling Heights entrance and tower in golden-hour light", "68% 45%"],
+      ["sterling-heights-hero", "Daylight arrival", "Planned Vijaya Sterling Heights entrance and tower in daylight", "65% 32%"],
+      ["sterling-heights-view", "Street elevation", "Planned Vijaya Sterling Heights street elevation in daylight", "65% 40%"],
+    ],
     brochurePage: "sterling-heights-brochure.html",
     brochurePdf: "vijaya-sterling-heights.pdf",
     short: "A premium residential development in Kerakuchi with an elegant gated entrance and signature Vijaya architecture. Sterling Heights is now sold out.",
@@ -146,6 +157,11 @@ const ongoingProjects = [
     type: "Residential and Commercial",
     image: "sapphire-hero",
     heroImage: "sapphire-hero",
+    heroSummary: "Residences and commercial spaces in Kachari Gaon, Tezpur. A distinctive city address with a December 2026 completion target.",
+    heroScenes: [
+      ["sapphire-blue-hour", "Blue hour", "Planned Vijaya Sapphire residences and commercial frontage at blue hour", "64% 45%"],
+      ["sapphire-hero", "Evening arrival", "Planned Vijaya Sapphire facade and commercial frontage in evening light", "60% 35%"],
+    ],
     brochurePage: "sapphire-brochure.html",
     brochurePdf: "vijaya-sapphire.pdf",
     short: "A premier mixed-use development in Kachari Gaon, Tezpur, with a striking facade and street-facing presence in the heart of the city.",
@@ -264,6 +280,32 @@ function imagePath(prefix, name) {
 
 function aerialImageAttributes(prefix = "") {
   return `src="${imagePath(prefix, "ashiyana-aerial")}" srcset="${imagePath(prefix, "ashiyana-aerial-960")} 960w, ${imagePath(prefix, "ashiyana-aerial-1600")} 1600w, ${imagePath(prefix, "ashiyana-aerial")} 2705w" sizes="100vw" width="2705" height="1353"`;
+}
+
+function heroScene([image, label, alt, position]) {
+  const width = image === "ashiyana-aerial" ? 2705
+    : ["sterling-heights-hero", "sterling-heights-view", "sapphire-hero"].includes(image) ? 1204 : 1774;
+  return {
+    src: imagePath("", image),
+    srcset: `${imagePath("", `${image}-960`)} 960w, ${imagePath("", image)} ${width}w`,
+    sizes: "(max-width: 680px) 100vw, (max-width: 980px) 1774px, 100vw", label, alt, position,
+  };
+}
+
+function heroProject(project) {
+  const canEnquire = project.enquiryEnabled !== false;
+  return {
+    slug: project.slug, name: project.name,
+    displayName: project.name.replace(/^Vijaya /, ""),
+    location: project.location, summary: project.heroSummary,
+    status: project.statusLabel,
+    url: projectUrl("", project),
+    exploreLabel: `Explore ${project.name.replace(/^Vijaya /, "")}`,
+    whatsapp: whatsappLink(canEnquire
+      ? `Hi Vijaya Construction, I want floor plans, pricing and a guided visit for ${project.name}.`
+      : `Hi Vijaya Construction, I viewed ${project.name}, which is sold out. Please share available Vijaya homes.`),
+    scenes: project.heroScenes.map(heroScene),
+  };
 }
 
 function assetPath(prefix, name) {
@@ -617,7 +659,7 @@ function breadcrumbSchema(pathItems) {
   };
 }
 
-function pageShell({ prefix = "", pathName = "", title, description, image = "home-hero", children, schema = [] }) {
+function pageShell({ prefix = "", pathName = "", title, description, image = "ashiyana-hero", children, schema = [] }) {
   const canonical = pathName ? `${SITE_URL}/${pathName}` : `${SITE_URL}/`;
   const ogImage = assetPath(`${SITE_URL}/`, image.includes(".") ? image : `${image}.webp`);
   const robots = IS_ALL_EDITS_PREVIEW ? "noindex, nofollow" : "index, follow";
@@ -680,7 +722,7 @@ function detailList(project) {
 }
 
 function projectFeature(project, prefix = "") {
-  const featureImage = project.slug === "vijaya-ashiyana" ? assetPath(prefix, "ashiyana-rooftop-pool-aerial.jpg") : imagePath(prefix, project.image);
+  const featureImage = project.slug === "vijaya-ashiyana" ? imagePath(prefix, "ashiyana-rooftop-pool-aerial") : imagePath(prefix, project.image);
   const featureAlt = project.slug === "vijaya-ashiyana" ? "Planned Vijaya Ashiyana rooftop pool and leisure deck" : `${project.name} in ${project.location}`;
   return `<article class="feature-project reveal">
   <a class="feature-media" href="${projectUrl(prefix, project)}" aria-label="Open ${escapeHtml(project.name)}"><img src="${featureImage}" alt="${escapeHtml(featureAlt)}" loading="lazy">${project.slug === "vijaya-ashiyana" ? `<span class="media-credit">Planned rooftop amenity</span>` : ""}</a>
@@ -731,19 +773,18 @@ function proofStats() {
 
 function posterFeature() {
   return `<section class="campaign-section" id="ashiyana-campaign" aria-labelledby="campaign-title">
-  <img src="${assetPath("", "ashiyana-pool-deck-dusk.jpg")}" alt="Planned Vijaya Ashiyana rooftop pool and leisure deck at dusk" loading="lazy" decoding="async">
+  <img src="${imagePath("", "ashiyana-pool-deck-dusk")}" alt="Planned Vijaya Ashiyana rooftop pool and leisure deck at dusk" loading="lazy" decoding="async">
   <div class="campaign-content"><span>Vijaya Ashiyana · Guwahati</span><h2 id="campaign-title">Above the city.<br>Closer to home.</h2><p>Explore the planned rooftop retreat, then ask our team for floor plans, current pricing and a guided visit.</p><a class="btn btn-light" href="ashiyana-interest.html?source=campaign">${icons.arrow} Request project details</a></div>
 </section>`;
 }
 
 function homePage() {
-  const mini = displayOngoingProjects
-    .map((project) => `<a class="mini-project" href="${projectUrl("", project)}"><img src="${imagePath("", project.image)}" alt="${escapeHtml(project.name)} thumbnail"><span><strong>${escapeHtml(project.name)}</strong><span>${escapeHtml(project.location)}</span></span></a>`)
+  const heroProjects = ongoingProjects.map(heroProject);
+  const initialProject = heroProjects[0];
+  const initialScene = initialProject.scenes[0];
+  const mini = ongoingProjects
+    .map((project) => `<a class="mini-project" data-hero-project="${project.slug}" href="${projectUrl("", project)}"><img src="${imagePath("", project.image)}" alt="" width="74" height="58" loading="lazy"><span class="mini-project-copy"><strong>${escapeHtml(project.name)}</strong><span>${escapeHtml(project.location)}</span><small>${escapeHtml(project.statusLabel)}</small></span><span class="mini-project-selected" aria-hidden="true">${icons.check}</span></a>`)
     .join("");
-  const heroTitle = previewCopy(
-    "Luxury flats in Guwahati, built with trust.",
-    "A new Vijaya address is rising in Guwahati."
-  );
   const ongoingCopy = previewCopy(
     "Explore detailed architectural visuals that bring your future home to life, then review brochures, RERA references where available, and direct sales paths before taking the next step.",
     "Compare project imagery and layouts, then check each project's RERA reference and brochure. Our team can help with current availability, price guidance, and a guided visit."
@@ -782,29 +823,29 @@ function homePage() {
     description: "Explore Vijaya Ashiyana flats in Guwahati, planned rooftop amenities, project facts and floor plans. Compare current options with an AREIDA member developer and request pricing or a guided visit.",
     image: "ashiyana-aerial",
     schema: [faqSchema],
-    children: `<section class="hero">
+    children: `<section class="hero project-showcase" data-hero-current="${initialProject.slug}">
   <div class="hero-media" data-hero-carousel aria-label="Views of planned Vijaya Ashiyana">
-    <img class="hero-slide is-active" data-hero-slide ${aerialImageAttributes()} alt="Planned Vijaya Ashiyana tower and rooftop in Guwahati, aerial view" fetchpriority="high" loading="eager">
-    <img class="hero-slide" data-hero-slide src="${assetPath("", "ashiyana-aerial-golden.jpg")}" alt="Vijaya Ashiyana planned tower in golden-hour light" loading="lazy" decoding="async">
-    <img class="hero-slide" data-hero-slide src="${assetPath("", "ashiyana-rooftop-pool-aerial.jpg")}" alt="Planned Ashiyana rooftop pool and recreation deck" loading="lazy" decoding="async">
-    <div class="hero-carousel-controls" role="group" aria-label="Hero views"><button type="button" class="is-active" data-hero-control="0" aria-label="Show aerial view" title="Aerial view" aria-current="true"></button><button type="button" data-hero-control="1" aria-label="Show golden-hour view" title="Golden-hour view"></button><button type="button" data-hero-control="2" aria-label="Show rooftop view" title="Rooftop view"></button><button type="button" data-hero-playback aria-label="Pause slideshow" title="Pause slideshow">Pause</button></div>
+    <img class="hero-slide is-active" data-hero-frame src="${initialScene.src}" srcset="${initialScene.srcset}" sizes="${initialScene.sizes}" style="object-position:${initialScene.position}" alt="${initialScene.alt}" fetchpriority="high" loading="eager" decoding="async">
+    <div class="hero-carousel-controls" role="group" aria-label="Project views"><span class="hero-view-label" data-hero-view-label>${initialScene.label}</span><div class="hero-view-buttons" data-hero-controls>${initialProject.scenes.map((scene, index) => `<button type="button" ${index === 0 ? 'class="is-active" aria-current="true"' : ""} data-hero-control="${index}" aria-label="Show ${scene.label.toLowerCase()}" title="${scene.label}"></button>`).join("")}</div><button type="button" data-hero-playback aria-label="Pause slideshow" title="Pause slideshow"><span data-hero-pause-icon>${icons.pause}</span><span data-hero-play-icon hidden>${icons.play}</span></button></div>
   </div>
   <div class="hero-content">
-    <div>
-      <h1>${heroTitle}</h1>
-      <p class="hero-copy">Meet Vijaya Ashiyana on Rajgarh Link Road: planned rooftop leisure, a central Guwahati address, and the record of 22 completed Vijaya projects. Completion is currently targeted for December 2029.</p>
+    <div class="hero-introduction">
+      <p class="hero-location"><span data-hero-location>${initialProject.location}</span><span class="hero-sales-status" data-hero-sales-status>${initialProject.status}</span></p>
+      <h1 id="hero-project-title">Vijaya <span data-hero-name>${initialProject.displayName}</span></h1>
+      <p class="hero-copy" data-hero-copy>${initialProject.summary}</p>
       <div class="hero-actions">
-        <a class="btn btn-gold" href="buildings/vijaya-ashiyana.html">${icons.arrow} Explore Ashiyana</a>
-        <a class="btn btn-light" href="${whatsappLink("Hi Vijaya Construction, I want details for your ongoing projects in Guwahati.")}" target="_blank" rel="noopener noreferrer">${icons.chat} WhatsApp</a>
+        <a class="btn btn-gold" data-hero-explore href="${initialProject.url}">${icons.arrow}<span>${initialProject.exploreLabel}</span></a>
+        <a class="btn btn-light" data-hero-whatsapp href="${initialProject.whatsapp}" target="_blank" rel="noopener noreferrer">${icons.chat} WhatsApp</a>
         <a class="btn btn-outline desktop-hero-call" href="${site.phoneHref}">${icons.phone} Call now</a>
       </div>
     </div>
     <aside class="hero-panel" aria-label="Ongoing Vijaya projects">
       <h2>Ongoing projects</h2>
-      <p>Select a project to explore images, brochures, and connect with our team.</p>
       <div class="mini-project-list">${mini}</div>
     </aside>
   </div>
+  <p class="sr-only" data-hero-announcement aria-live="polite" aria-atomic="true"></p>
+  <script type="application/json" data-hero-projects>${JSON.stringify(heroProjects).replaceAll("<", "\\u003c")}</script>
 </section>
 ${proofStats()}
 <section class="section section-warm" id="ongoing">
@@ -914,7 +955,7 @@ function interestPage() {
   <div class="section-inner interest-layout"><div class="interest-editorial"><span class="eyebrow">Your next conversation</span><h2>Tell us what feels like home.</h2><p>Whether you are comparing a luxury address or working within a particular budget, our sales team can explain the available choices without a booking commitment.</p><ul><li>Floor plans and home configurations</li><li>Current availability and price guidance</li><li>RERA and brochure details</li><li>A guided visit when you are ready</li></ul><a class="text-link" href="${brochureUrl("", ashiyana)}">View the Ashiyana brochure</a></div>
   <div class="interest-form-wrap"><h2>Request project details</h2><p>Our Guwahati sales desk will contact you during your selected window.</p>${interestForm()}</div></div>
 </section>
-<section class="interest-visual"><img src="${assetPath("", "ashiyana-rooftop-pool-aerial.jpg")}" alt="Vijaya Ashiyana's proposed rooftop pool and recreation space" loading="lazy"><div><h2>A closer look at life above the city.</h2><p>Planned rooftop amenities are subject to the final project documents and brochure.</p><a href="buildings/vijaya-ashiyana.html">Explore the full project ${icons.arrow}</a></div></section>
+<section class="interest-visual"><img src="${imagePath("", "ashiyana-rooftop-pool-aerial")}" alt="Vijaya Ashiyana's proposed rooftop pool and recreation space" loading="lazy"><div><h2>A closer look at life above the city.</h2><p>Planned rooftop amenities are subject to the final project documents and brochure.</p><a href="buildings/vijaya-ashiyana.html">Explore the full project ${icons.arrow}</a></div></section>
 <section class="booking-confidence"><div class="section-inner"><div><span class="eyebrow">Buyer information</span><h2>Book with confidence.</h2><p>Verify project information on the official Assam RERA website. The customer information form is for buyers who have already paid a booking amount; it is separate from the enquiry form above.</p></div><div class="booking-links"><a href="https://rera.assam.gov.in/" target="_blank" rel="noopener noreferrer">Visit Assam RERA ${icons.arrow}</a><a href="https://forms.gle/piDFx9xmtopN8ErE7" target="_blank" rel="noopener noreferrer">Already booked? Open customer information form ${icons.arrow}</a></div></div></section>`,
   });
 }
@@ -945,7 +986,11 @@ function projectPage(project) {
     : isOngoing
     ? `${project.name} is an ongoing Vijaya Construction project for buyers comparing luxury flats in ${project.city}. View images, facts, RERA details, brochure, BHK enquiry options, and sales contact.`
     : `${project.name} is a completed Vijaya Construction project at ${project.location}, delivered in ${project.completed}. View project facts and contact sales for current luxury flats in Guwahati and Tezpur.`;
-  const gallery = (project.gallery || [[project.image, project.name]])
+  const galleryImages = project.gallery || [[project.image, project.name]];
+  const extraViews = (project.heroScenes || [])
+    .filter(([image]) => !galleryImages.some(([existing]) => existing === image))
+    .map(([image, label, alt]) => [image, `${alt} (${label})`]);
+  const gallery = [...galleryImages, ...extraViews]
     .map(([img, caption], index) => `<figure class="gallery-item ${index === 0 ? "large" : ""} reveal"><img src="${imagePath(prefix, img)}" alt="${escapeHtml(caption)}" loading="${index === 0 ? "eager" : "lazy"}"><figcaption class="gallery-caption">${escapeHtml(caption)}</figcaption></figure>`)
     .join("");
   const amenities = (project.amenities || [
@@ -1031,7 +1076,7 @@ function projectPage(project) {
       <h2 class="section-heading">${isOngoing ? "Explore the Vision: Gallery & Layouts." : project.hasSitePhoto ? "The completed address." : "Project photo archive."}</h2>
       ${galleryCopy}
     </div>
-    ${project.status === "Completed" && !project.hasSitePhoto ? `<p class="archive-note">No verified project photograph is available in our archive. Contact our team for the delivered address details.</p>` : `<div class="gallery-grid">${gallery}${project.slug === "vijaya-ashiyana" ? `<figure class="gallery-item reveal"><img src="${assetPath(prefix, "ashiyana-rooftop-pool-aerial.jpg")}" alt="Vijaya Ashiyana planned rooftop pool from above" loading="lazy"><figcaption class="gallery-caption">Planned rooftop pool · aerial view</figcaption></figure><figure class="gallery-item reveal"><img src="${assetPath(prefix, "ashiyana-pool-deck-dusk.jpg")}" alt="Vijaya Ashiyana planned rooftop deck at dusk" loading="lazy"><figcaption class="gallery-caption">Planned rooftop deck · dusk view</figcaption></figure>` : ""}</div>`}
+    ${project.status === "Completed" && !project.hasSitePhoto ? `<p class="archive-note">No verified project photograph is available in our archive. Contact our team for the delivered address details.</p>` : `<div class="gallery-grid">${gallery}</div>`}
   </div>
 </section>
 <section class="section section-warm">
