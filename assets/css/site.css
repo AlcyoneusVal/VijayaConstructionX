@@ -2693,6 +2693,10 @@ html.js .reveal.is-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .hero:has([data-hero-carousel]) {
+    touch-action: pan-y pinch-zoom;
+  }
+
   .footer-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -2996,6 +3000,62 @@ html.js .reveal.is-visible {
     min-height: 250px;
   }
 
+  .gallery-swipe {
+    display: flex;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) var(--line);
+    padding-bottom: 16px;
+  }
+
+  .gallery-swipe .gallery-item {
+    flex: 0 0 calc(100% - 32px);
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    min-width: 0;
+    min-height: 0;
+    height: min(500px, 65svh);
+    margin: 0;
+    scroll-snap-align: start;
+  }
+
+  .gallery-swipe::after {
+    content: "";
+    flex: 0 0 18px;
+  }
+
+  .gallery-swipe .gallery-item img {
+    min-height: 0;
+  }
+
+  .gallery-swipe .gallery-item.is-layout img {
+    object-fit: contain;
+    background: #fff;
+  }
+
+  .gallery-swipe .gallery-caption {
+    position: static;
+    border-radius: 0;
+    background: var(--charcoal-2);
+    padding: 12px 14px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  html.js .gallery-swipe .gallery-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  html.js .gallery-swipe .gallery-item img {
+    transform: none;
+    clip-path: none;
+    transition: none;
+  }
+
   .detail-list,
   .meta-grid {
     grid-template-columns: 1fr;
@@ -3043,16 +3103,28 @@ html.js .reveal.is-visible {
 /* ---- Header: refined scrolled state ------------------------------ */
 .site-header {
   transition: height 360ms var(--ease-cine), background 360ms ease,
-    box-shadow 360ms ease, border-color 360ms ease;
+    box-shadow 360ms ease, border-color 360ms ease, transform 280ms ease;
 }
 .site-header.is-scrolled {
   height: calc(var(--header-height) - 12px);
-  background: #fbfaf7;
+  background: rgba(251, 250, 247, 0.94);
   box-shadow: 0 16px 36px -24px rgba(21, 24, 39, 0.45);
   border-bottom-color: rgba(221, 227, 238, 0.92);
 }
 .site-header.is-scrolled .brand-logo {
   transform: scale(0.92);
+}
+
+.site-header.is-hidden {
+  transform: translateY(calc(-100% - 1px));
+  pointer-events: none;
+  box-shadow: none;
+}
+
+body.menu-open .site-header {
+  transform: none;
+  pointer-events: auto;
+  background: var(--paper-soft);
 }
 
 @media (max-width: 680px) {
@@ -3109,12 +3181,9 @@ html.js .reveal.is-visible {
   clip-path: inset(0 round var(--radius));
 }
 html.js .hero-media img {
-  transform: scale(1.025);
-  transition: opacity 1100ms ease, transform 1250ms var(--ease-cine);
-  will-change: transform;
-}
-body.is-loaded .hero-media img {
   transform: scale(1);
+  transition: opacity 1100ms ease;
+  will-change: transform;
 }
 
 /* ---- Reveal variants -------------------------------------------- */
@@ -3261,12 +3330,6 @@ body.variant-all-edits-preview .site-footer .reveal-blur {
   pointer-events: none;
 }
 @media (max-width: 680px) {
-  html.js .hero-media img,
-  body.is-loaded .hero-media img {
-    transform: none;
-    transition: opacity 1100ms ease;
-  }
-
   .scroll-progress {
     height: 2px;
   }
@@ -3308,6 +3371,9 @@ body.variant-all-edits-preview .site-footer .reveal-blur {
 
 /* ---- Reduced motion: disable all of the above ------------------- */
 @media (prefers-reduced-motion: reduce) {
+  .site-header {
+    transition: none;
+  }
   html.js .reveal,
   html.js .reveal-blur,
   html.js .tilt-in,

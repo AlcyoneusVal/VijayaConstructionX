@@ -984,8 +984,9 @@ function projectPage(project) {
   const extraViews = (project.heroScenes || [])
     .filter(([image]) => !galleryImages.some(([existing]) => existing === image))
     .map(([image, , alt]) => [image, alt]);
-  const gallery = [...extraViews, ...galleryImages]
-    .map(([img, caption], index) => `<figure class="gallery-item ${index === 0 ? "large" : ""} reveal"><img src="${imagePath(prefix, img)}" alt="${escapeHtml(caption)}" loading="${index === 0 ? "eager" : "lazy"}"><figcaption class="gallery-caption">${escapeHtml(caption)}</figcaption></figure>`)
+  const galleryViews = [...extraViews, ...galleryImages];
+  const gallery = galleryViews
+    .map(([img, caption], index) => `<figure class="gallery-item ${index === 0 ? "large" : ""}${/floor plan|amenities plan/i.test(caption) ? " is-layout" : ""} reveal"><img src="${imagePath(prefix, img)}" alt="${escapeHtml(caption)}" loading="${index === 0 ? "eager" : "lazy"}"><figcaption class="gallery-caption">${escapeHtml(caption)}</figcaption></figure>`)
     .join("");
   const amenities = (project.amenities || [
     ["Delivered address", "Part of the Vijaya completed-project record."],
@@ -1042,7 +1043,7 @@ function projectPage(project) {
     children: `<section class="hero project-hero">
   <div class="hero-media${project.status === "Completed" && !project.hasSitePhoto ? " hero-media-archive" : ""}">${project.status === "Completed" && !project.hasSitePhoto
     ? `<span>Completed Vijaya address in ${escapeHtml(project.location)}</span>`
-    : `<img ${project.heroImage === "ashiyana-aerial" ? aerialImageAttributes(prefix) : `src="${imagePath(prefix, project.heroImage || project.image)}"`} alt="${escapeHtml(project.status === "Completed" ? `Completed ${project.name} building at ${project.location}` : `Planned ${project.name} building at ${project.location}`)}" fetchpriority="high">`}</div>
+    : `<img ${isOngoing ? "data-hero-motion " : ""}${project.heroImage === "ashiyana-aerial" ? aerialImageAttributes(prefix) : `src="${imagePath(prefix, project.heroImage || project.image)}"`} alt="${escapeHtml(project.status === "Completed" ? `Completed ${project.name} building at ${project.location}` : `Planned ${project.name} building at ${project.location}`)}" fetchpriority="high">`}</div>
   <div class="hero-content">
     <div>
       <h1 class="project-title">${escapeHtml(project.name)}</h1>
@@ -1070,7 +1071,7 @@ function projectPage(project) {
       <h2 class="section-heading">${isOngoing ? "Explore the Vision: Gallery & Layouts." : project.hasSitePhoto ? "The completed address." : "Project photo archive."}</h2>
       ${galleryCopy}
     </div>
-    ${project.status === "Completed" && !project.hasSitePhoto ? `<p class="archive-note">No verified project photograph is available in our archive. Contact our team for the delivered address details.</p>` : `<div class="gallery-grid">${gallery}</div>`}
+    ${project.status === "Completed" && !project.hasSitePhoto ? `<p class="archive-note">No verified project photograph is available in our archive. Contact our team for the delivered address details.</p>` : `<div class="gallery-grid${galleryViews.length > 1 ? " gallery-swipe" : ""}"${galleryViews.length > 1 ? ' tabindex="0" role="region" aria-label="Project image gallery"' : ""}>${gallery}</div>`}
   </div>
 </section>
 <section class="section section-warm">

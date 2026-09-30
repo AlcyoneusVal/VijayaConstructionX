@@ -2,6 +2,7 @@
   const body = document.body;
   const root = document.documentElement;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const header = document.querySelector(".site-header");
 
   /* ---------------------------------------------------------------
      Mobile navigation
@@ -15,6 +16,7 @@
     const navigationLinks = [...nav.querySelectorAll("a")];
     const setNavigationOpen = (isOpen) => {
       body.classList.toggle("menu-open", isOpen);
+      if (isOpen) header?.classList.remove("is-hidden");
       navToggle.setAttribute("aria-expanded", String(isOpen));
       navToggle.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
       nav.inert = mobileNavigation.matches && !isOpen;
@@ -198,6 +200,41 @@
     requestAnimationFrame(() => body.classList.add("is-loaded"))
   );
 
+  // Keep the outgoing shot moving through the crossfade; pause offscreen media.
+  const heroMotions = new Map();
+  const visibleHeroes = new Set(document.querySelectorAll(".hero"));
+  const syncHeroMotion = () => {
+    heroMotions.forEach((animation, image) => {
+      if (animation.playState === "finished") return;
+      if (document.hidden || !visibleHeroes.has(image.closest(".hero"))) animation.pause();
+      else animation.play();
+    });
+  };
+  const animateHeroImage = (image, zoomOut = false, loop = false) => {
+    heroMotions.get(image)?.cancel();
+    if (reduceMotion || navigator.connection?.saveData || !image.animate) return;
+    const animation = image.animate([
+      { transform: `scale(${zoomOut ? 1.035 : 1})` },
+      { transform: `scale(${zoomOut ? 1 : 1.035})` },
+    ], { duration: loop ? 22000 : 14000, easing: "linear", fill: "forwards", iterations: loop ? Infinity : 1, direction: loop ? "alternate" : "normal" });
+    heroMotions.set(image, animation);
+    syncHeroMotion();
+  };
+  document.querySelectorAll("[data-hero-motion]").forEach((image) => animateHeroImage(image, false, true));
+  if (heroMotions.size || document.querySelector("[data-hero-carousel]")) {
+    if ("IntersectionObserver" in window) {
+      const motionObserver = new IntersectionObserver((entries) => {
+        entries.forEach(({ target, isIntersecting }) => {
+          if (isIntersecting) visibleHeroes.add(target);
+          else visibleHeroes.delete(target);
+        });
+        syncHeroMotion();
+      });
+      visibleHeroes.forEach((hero) => motionObserver.observe(hero));
+    }
+    document.addEventListener("visibilitychange", syncHeroMotion);
+  }
+
   const carousel = document.querySelector("[data-hero-carousel]");
   const projectData = document.querySelector("[data-hero-projects]");
   if (carousel && projectData) {
@@ -220,6 +257,7 @@
     let autoplayDisabled = Boolean(navigator.connection?.saveData);
     let inView = true;
     let requestId = 0;
+    let swipe = null;
 
     const updateSelection = () => {
       hero.classList.toggle("is-project-selector", desktop.matches);
@@ -273,7 +311,7 @@
       carouselTimer = null;
     };
     const startCarousel = () => {
-      if (reduceMotion || autoplayDisabled || document.hidden || !inView || carouselTimer || activeProject.scenes.length < 2) return;
+      if (reduceMotion || autoplayDisabled || document.hidden || !inView || carouselTimer || swipe || activeProject.scenes.length < 2) return;
       const keyboardFocus = hero.contains(document.activeElement) && document.activeElement.matches(":focus-visible");
       if (keyboardFocus || hero.querySelector(".hero-panel").matches(":hover") ||
           carousel.querySelector(".hero-carousel-controls").matches(":hover")) return;
@@ -304,6 +342,7 @@
         frame.alt = scene.alt;
         frame.style.objectPosition = scene.position;
         frame.setAttribute("aria-hidden", "false");
+        animateHeroImage(frame, index % 2 === 1);
         frame.classList.add("is-active");
         frames[activeFrame].classList.remove("is-active");
         frames[activeFrame].setAttribute("aria-hidden", "true");
@@ -329,6 +368,30 @@
       const button = event.target.closest("[data-hero-control]");
       if (button) showScene(activeProject, Number(button.dataset.heroControl));
     });
+    hero.addEventListener("pointerdown", (event) => {
+      if (event.pointerType !== "touch" || desktop.matches) return;
+      if (!event.isPrimary) {
+        swipe = null;
+        startCarousel();
+        return;
+      }
+      if (event.target.closest("a, button, input, select, textarea, .hero-panel")) return;
+      swipe = { id: event.pointerId, x: event.clientX, y: event.clientY, time: performance.now() };
+      stopCarousel();
+    }, { passive: true });
+    const finishSwipe = (event) => {
+      if (!swipe || event.pointerId !== swipe.id) return;
+      const dx = event.clientX - swipe.x;
+      const dy = event.clientY - swipe.y;
+      const elapsed = performance.now() - swipe.time;
+      swipe = null;
+      if (event.type === "pointerup" && elapsed < 1500 && Math.abs(dx) >= 48 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        const next = (activeIndex + (dx < 0 ? 1 : -1) + activeProject.scenes.length) % activeProject.scenes.length;
+        showScene(activeProject, next);
+      } else startCarousel();
+    };
+    hero.addEventListener("pointerup", finishSwipe, { passive: true });
+    hero.addEventListener("pointercancel", finishSwipe, { passive: true });
     projectLinks.forEach((link) => {
       const select = () => showScene(projects.find((project) => project.slug === link.dataset.heroProject), 0, true);
       link.addEventListener("click", (event) => {
@@ -351,6 +414,7 @@
     hero.addEventListener("focusout", () => requestAnimationFrame(() => startCarousel()));
     desktop.addEventListener("change", () => {
       requestId++;
+      swipe = null;
       hero.removeAttribute("aria-busy");
       updateSelection();
       if (!desktop.matches && activeProject.slug !== projects[0].slug) showScene(projects[0], 0);
@@ -367,6 +431,7 @@
     document.addEventListener("visibilitychange", () => document.hidden ? stopCarousel() : startCarousel());
     updateProject(activeProject);
     updateControls();
+    animateHeroImage(frames[0]);
     startCarousel();
   }
 
@@ -374,7 +439,6 @@
      Scroll-driven effects: header state, parallax, progress bar.
      All batched into a single rAF tick.
   --------------------------------------------------------------- */
-  const header = document.querySelector(".site-header");
   const homeHero = document.querySelector(".page-main > .hero:not(.project-hero)");
   const homeHeroMedia = homeHero?.querySelector(".hero-media");
   let progressBar = null;
@@ -414,12 +478,21 @@
     }
   };
 
+  // Exclude the header's own height change from scroll-direction detection.
+  const headerScrollPosition = () => Math.max(0, window.scrollY) - (header?.offsetHeight || 0);
+  let headerScrollAnchor = headerScrollPosition();
+  let headerViewportWidth = window.innerWidth;
+  header?.addEventListener("focusin", () => {
+    header.classList.remove("is-hidden");
+    headerScrollAnchor = headerScrollPosition();
+  });
   let ticking = false;
   const onScroll = () => {
     if (ticking) return;
     ticking = true;
     requestAnimationFrame(() => {
-      const y = window.scrollY || window.pageYOffset;
+      const maxScroll = Math.max(0, root.scrollHeight - window.innerHeight);
+      const y = Math.max(0, Math.min(window.scrollY, maxScroll));
 
       if (homeHeroMedia && window.innerWidth > 680 && !reduceMotion) {
         const progress = Math.min(y / Math.max(homeHero.offsetHeight * 0.7, 1), 1);
@@ -437,7 +510,18 @@
         mobileCta.classList.toggle("before-hero", y < heroEnd - window.innerHeight * 0.5);
       }
 
-      if (header) header.classList.toggle("is-scrolled", y > 24);
+      if (header) {
+        header.classList.toggle("is-scrolled", y > 24);
+        const position = y - header.offsetHeight;
+        const keyboardFocus = header.contains(document.activeElement) && document.activeElement.matches(":focus-visible");
+        if (y <= header.offsetHeight + 24 || body.classList.contains("menu-open") || keyboardFocus) {
+          header.classList.remove("is-hidden");
+          headerScrollAnchor = position;
+        } else if (Math.abs(position - headerScrollAnchor) >= 12) {
+          header.classList.toggle("is-hidden", position > headerScrollAnchor);
+          headerScrollAnchor = position;
+        }
+      }
 
       if (!reduceMotion) {
         if (progressBar) {
@@ -461,7 +545,15 @@
     });
   };
   window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", onScroll, { passive: true });
+  window.addEventListener("resize", () => {
+    // Mobile browser chrome can resize the height during an ordinary scroll.
+    if (window.innerWidth !== headerViewportWidth) {
+      headerViewportWidth = window.innerWidth;
+      headerScrollAnchor = headerScrollPosition();
+      header?.classList.remove("is-hidden");
+    }
+    onScroll();
+  }, { passive: true });
   onScroll();
 
   /* ---------------------------------------------------------------
