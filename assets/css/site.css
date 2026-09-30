@@ -343,14 +343,14 @@ button {
 }
 
 .btn-whatsapp {
-  color: #fff;
+  color: #063c1c;
   background: var(--whatsapp);
   border-color: var(--whatsapp);
   box-shadow: 0 14px 28px rgba(37, 211, 102, 0.18);
 }
 
 .btn-whatsapp:hover {
-  color: #fff;
+  color: #063c1c;
   background: var(--whatsapp-dark);
   border-color: var(--whatsapp-dark);
   box-shadow: 0 16px 32px -18px rgba(37, 211, 102, 0.42);
@@ -1170,8 +1170,8 @@ html.js .hero-carousel-controls {
 
 .lead-form input::placeholder,
 .lead-form textarea::placeholder {
-  color: #838d9d;
-  opacity: 0.78;
+  color: #5a6577;
+  opacity: 0.9;
 }
 
 .lead-form input:focus,
