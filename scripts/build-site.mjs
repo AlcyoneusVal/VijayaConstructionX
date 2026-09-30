@@ -282,7 +282,7 @@ function heroScene([image, label, alt, position]) {
   return {
     src: imagePath("", image),
     srcset: `${imagePath("", `${image}-960`)} 960w, ${imagePath("", image)} ${width}w`,
-    sizes: "(max-width: 680px) 100vw, (max-width: 980px) 1774px, 100vw", label, alt, position,
+    sizes: "(max-width: 680px) 200svh, (max-width: 980px) 1774px, 100vw", label, alt, position,
   };
 }
 

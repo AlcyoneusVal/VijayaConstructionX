@@ -10,16 +10,21 @@
   const nav = document.querySelector("[data-primary-nav]");
 
   if (navToggle && nav) {
+    const mobileNavigation = window.matchMedia("(max-width: 980px)");
+    const pageSurfaces = [...document.querySelectorAll(".page-main, .site-footer, .mobile-cta, .agent-chat")];
+    const navigationLinks = [...nav.querySelectorAll("a")];
     const setNavigationOpen = (isOpen) => {
       body.classList.toggle("menu-open", isOpen);
       navToggle.setAttribute("aria-expanded", String(isOpen));
       navToggle.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
+      nav.inert = mobileNavigation.matches && !isOpen;
+      pageSurfaces.forEach((surface) => { surface.inert = isOpen; });
     };
     navToggle.addEventListener("click", () => {
       setNavigationOpen(!body.classList.contains("menu-open"));
     });
 
-    nav.querySelectorAll("a").forEach((link) => {
+    navigationLinks.forEach((link) => {
       link.addEventListener("click", () => {
         setNavigationOpen(false);
       });
@@ -29,7 +34,25 @@
         setNavigationOpen(false);
         navToggle.focus();
       }
+      if (event.key === "Tab" && body.classList.contains("menu-open")) {
+        const current = document.activeElement;
+        if (!event.shiftKey && current === navToggle) {
+          event.preventDefault();
+          navigationLinks[0].focus();
+        } else if ((event.shiftKey && current === navigationLinks[0]) || (!event.shiftKey && current === navigationLinks.at(-1))) {
+          event.preventDefault();
+          navToggle.focus();
+        } else if (event.shiftKey && current === navToggle) {
+          event.preventDefault();
+          navigationLinks.at(-1).focus();
+        }
+      }
     });
+    document.addEventListener("click", (event) => {
+      if (body.classList.contains("menu-open") && !event.target.closest(".site-header")) setNavigationOpen(false);
+    });
+    mobileNavigation.addEventListener("change", () => setNavigationOpen(false));
+    setNavigationOpen(false);
   }
 
   /* ---------------------------------------------------------------
