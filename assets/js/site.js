@@ -60,21 +60,11 @@
   // (.proof-item rule lives in CSS; we collect it below.)
 
   /* ---------------------------------------------------------------
-     Footer monogram expands on hover, focus, or touch.
+     Footer name settles into place once, without changing its width.
   --------------------------------------------------------------- */
   const wordmark = document.querySelector(".footer-wordmark");
   if (wordmark) {
-    const syncWordmarkState = () => {
-      const hovered = window.matchMedia("(hover: hover) and (pointer: fine)").matches && wordmark.matches(":hover");
-      wordmark.setAttribute("aria-expanded", String(hovered || wordmark.matches(":focus-visible") || wordmark.classList.contains("is-expanded")));
-    };
-    wordmark.addEventListener("click", () => {
-      if (!window.matchMedia("(hover: none)").matches) return;
-      wordmark.classList.toggle("is-expanded");
-      syncWordmarkState();
-    });
-    ["mouseenter", "mouseleave", "focus", "blur"].forEach(event => wordmark.addEventListener(event, syncWordmarkState));
-    if ("IntersectionObserver" in window) {
+    if (!reduceMotion && "IntersectionObserver" in window) {
       const wordmarkObserver = new IntersectionObserver(entries => {
         if (entries.some(entry => entry.isIntersecting)) {
           wordmark.classList.add("is-visible");

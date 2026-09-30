@@ -1,4 +1,5 @@
-import { cpSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 
 const ROOT = path.resolve(".");
@@ -7,7 +8,7 @@ const IS_ROOT_OUTPUT = OUTPUT_DIR === ROOT;
 const SITE_URL = "https://vijaya.construction";
 const SITE_VARIANT = process.env.VIJAYA_SITE_VARIANT || "approved";
 const IS_ALL_EDITS_PREVIEW = SITE_VARIANT === "all-edits-preview";
-const ASSET_VERSION = IS_ALL_EDITS_PREVIEW ? "20260929-brand-audit-3" : "20260929-approved-3";
+const assetVersions = new Map();
 const SECURITY_CSP = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -249,9 +250,16 @@ function escapeHtml(value = "") {
     .replaceAll("'", "&#039;");
 }
 
+function versionedAsset(prefix, relativePath) {
+  if (!assetVersions.has(relativePath)) {
+    const contents = readFileSync(path.join(ROOT, relativePath));
+    assetVersions.set(relativePath, createHash("sha256").update(contents).digest("hex").slice(0, 12));
+  }
+  return `${prefix}${relativePath}?v=${assetVersions.get(relativePath)}`;
+}
+
 function imagePath(prefix, name) {
-  const version = name === "ashiyana-aerial" ? `?v=${ASSET_VERSION}` : "";
-  return `${prefix}assets/images/${name}.webp${version}`;
+  return assetPath(prefix, `${name}.webp`);
 }
 
 function aerialImageAttributes(prefix = "") {
@@ -259,15 +267,15 @@ function aerialImageAttributes(prefix = "") {
 }
 
 function assetPath(prefix, name) {
-  return `${prefix}assets/images/${name}`;
+  return versionedAsset(prefix, `assets/images/${name}`);
 }
 
 function brochurePath(prefix, file) {
-  return `${prefix}assets/brochures/${file}`;
+  return versionedAsset(prefix, `assets/brochures/${file}`);
 }
 
 function brochurePreviewPath(prefix, file) {
-  return `${prefix}assets/images/${file.replace(/\.pdf$/i, "-preview.webp")}`;
+  return assetPath(prefix, file.replace(/\.pdf$/i, "-preview.webp"));
 }
 
 function projectUrl(prefix, project) {
@@ -282,12 +290,21 @@ function whatsappLink(message) {
   return `${site.whatsapp}?text=${encodeURIComponent(message)}`;
 }
 
+function logoArtwork(prefix = "") {
+  const source = assetPath(prefix, "vijaya-logo.png");
+  return `<span class="logo-artwork" aria-hidden="true">
+        <img class="logo-symbol" src="${source}" width="120" height="135" alt="">
+        <img class="logo-name" src="${source}" width="120" height="135" alt="">
+        <img class="logo-construction" src="${source}" width="120" height="135" alt="">
+      </span>`;
+}
+
 function header(prefix = "") {
   const brandPlace = IS_ALL_EDITS_PREVIEW ? "" : '<span class="brand-place">Assam</span>';
   return `<header class="site-header">
   <div class="nav-shell">
     <a class="brand" href="${prefix}index.html" aria-label="Vijaya Construction home">
-      <span class="brand-logo"><img src="${prefix}assets/images/vijaya-logo.png" width="120" height="135" alt="" aria-hidden="true"></span>
+      <span class="brand-logo">${logoArtwork(prefix)}</span>
       <span class="brand-text"><span class="brand-name">Vijaya Construction</span>${brandPlace}</span>
     </a>
     <nav class="primary-nav" id="primary-navigation" data-primary-nav aria-label="Primary navigation">
@@ -340,7 +357,7 @@ ${footerBrandline}      <h2>Homes with a record behind them.</h2>
     <span>Copyright ${new Date().getFullYear()} Vijaya Construction. Project availability, specifications, and timelines are subject to official sales confirmation.</span>
     <span class="footer-credit">Developed by <a href="https://quasont.dev" target="_blank" rel="noopener noreferrer">QuaSont Creative Labs</a></span>
   </div>
-  <button class="footer-wordmark" type="button" aria-label="Reveal Vijaya Construction" aria-expanded="false"><span class="wordmark-v">V</span><span class="wordmark-rest" aria-hidden="true">IJAYA CONSTRUCTION</span></button>
+  <div class="footer-wordmark"><span>VIJAYA</span><span>CONSTRUCTION</span></div>
 </footer>`;
 }
 
@@ -536,12 +553,12 @@ function organizationSchema() {
     "@id": `${SITE_URL}/#organization`,
     name: site.name,
     url: SITE_URL,
-    logo: `${SITE_URL}/assets/images/vijaya-logo.png`,
+    logo: assetPath(`${SITE_URL}/`, "vijaya-logo.png"),
     description: "Vijaya Construction builds flats and premium residential projects in Guwahati and Tezpur, backed by 22 completed projects, 700+ homes and commercial spaces delivered or planned, and membership in AREIDA.",
     slogan: "Luxury flats in Guwahati, built with trust.",
     telephone: site.phone,
     email: site.email,
-    image: `${SITE_URL}/assets/images/ashiyana-aerial.webp`,
+    image: imagePath(`${SITE_URL}/`, "ashiyana-aerial"),
     hasMap: site.mapsUrl,
     openingHoursSpecification: [{
       "@type": "OpeningHoursSpecification",
@@ -602,7 +619,7 @@ function breadcrumbSchema(pathItems) {
 
 function pageShell({ prefix = "", pathName = "", title, description, image = "home-hero", children, schema = [] }) {
   const canonical = pathName ? `${SITE_URL}/${pathName}` : `${SITE_URL}/`;
-  const ogImage = `${SITE_URL}/assets/images/${image.includes(".") ? image : `${image}.webp`}`;
+  const ogImage = assetPath(`${SITE_URL}/`, image.includes(".") ? image : `${image}.webp`);
   const robots = IS_ALL_EDITS_PREVIEW ? "noindex, nofollow" : "index, follow";
   const bodyClass = IS_ALL_EDITS_PREVIEW ? ' class="variant-all-edits-preview"' : "";
   return `<!doctype html>
@@ -629,8 +646,8 @@ function pageShell({ prefix = "", pathName = "", title, description, image = "ho
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;650;750;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="icon" href="${prefix}assets/images/vijaya-logo.png" type="image/png">
-  <link rel="stylesheet" href="${prefix}assets/css/site.css?v=${ASSET_VERSION}">
+  <link rel="icon" href="${assetPath(prefix, "vijaya-logo.png")}" type="image/png">
+  <link rel="stylesheet" href="${versionedAsset(prefix, "assets/css/site.css")}">
   <script type="application/ld+json">${schemaGraph([organizationSchema(), webSiteSchema(), ...schema])}</script>
 </head>
 <body${bodyClass}>
@@ -643,7 +660,7 @@ ${workWithVijaya(prefix)}
 ${footer(prefix)}
 ${mobileCta()}
 ${agentChat()}
-<script src="${prefix}assets/js/site.js?v=${ASSET_VERSION}" defer></script>
+<script src="${versionedAsset(prefix, "assets/js/site.js")}" defer></script>
 </body>
 </html>`;
 }
@@ -907,7 +924,7 @@ function projectSchema(project) {
     "@type": "ApartmentComplex",
     name: project.name,
     url: `${SITE_URL}/buildings/${project.slug}.html`,
-    ...(project.status === "Ongoing" || project.hasSitePhoto ? { image: `${SITE_URL}/assets/images/${project.image}.webp` } : {}),
+    ...(project.status === "Ongoing" || project.hasSitePhoto ? { image: imagePath(`${SITE_URL}/`, project.image) } : {}),
     description: project.short,
     address: { "@type": "PostalAddress", streetAddress: project.location, addressLocality: project.city, addressRegion: "Assam", addressCountry: "IN" },
     numberOfAccommodationUnits: Number.parseInt(project.units, 10),
@@ -1109,6 +1126,7 @@ Sitemap: ${SITE_URL}/sitemap.xml
 
 function securityHeaders() {
   return [
+    ["Cache-Control", "public, max-age=0, must-revalidate"],
     ["Content-Security-Policy", `${SECURITY_CSP}; frame-ancestors 'self'`],
     ["X-Content-Type-Options", "nosniff"],
     ["X-Frame-Options", "SAMEORIGIN"],

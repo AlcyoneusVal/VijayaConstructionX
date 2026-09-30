@@ -6,6 +6,10 @@
       "source": "/(.*)",
       "headers": [
         {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
           "key": "Content-Security-Policy",
           "value": "default-src 'self'; base-uri 'self'; object-src 'none'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; script-src-attr 'none'; connect-src 'self' https://api.web3forms.com; frame-src https://www.google.com https://maps.google.com; form-action 'self' https://api.web3forms.com; manifest-src 'self'; media-src 'self'; worker-src 'self'; upgrade-insecure-requests; frame-ancestors 'self'"
         },
