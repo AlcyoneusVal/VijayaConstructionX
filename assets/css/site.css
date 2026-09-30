@@ -119,7 +119,6 @@ button {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  transform: scale(1.25);
 }
 
 .brand-text {
@@ -1029,6 +1028,18 @@ html.js .hero-carousel-controls {
   box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.16);
 }
 
+.lead-form [aria-invalid="true"] {
+  border-color: #b33c32;
+  box-shadow: 0 0 0 3px rgba(179, 60, 50, 0.12);
+}
+
+.field-error {
+  color: #9e332c;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 .lead-form select:focus {
   background-color: #fff;
 }
@@ -1590,6 +1601,13 @@ html.js .hero-carousel-controls {
 
 .agent-chat.scroll-hidden {
   transform: translateY(calc(100% + 30px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mobile-cta.form-in-view,
+.agent-chat.form-in-view {
+  visibility: hidden;
   opacity: 0;
   pointer-events: none;
 }
@@ -2204,10 +2222,6 @@ html.js .reveal.is-visible {
   margin: 0 0 18px;
 }
 
-.interest-form .form-grid.two + .form-grid.two {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .interest-form .form-grid {
   margin-bottom: 20px;
 }
@@ -2411,10 +2425,6 @@ html.js .reveal.is-visible {
   .interest-content {
     padding: 54px 16px;
     background: var(--paper-soft);
-  }
-
-  .interest-form .form-grid.two + .form-grid.two {
-    grid-template-columns: 1fr;
   }
 
   .interest-jump {

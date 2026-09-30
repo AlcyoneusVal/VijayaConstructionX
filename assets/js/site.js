@@ -10,16 +10,25 @@
   const nav = document.querySelector("[data-primary-nav]");
 
   if (navToggle && nav) {
-    navToggle.addEventListener("click", () => {
-      const isOpen = body.classList.toggle("menu-open");
+    const setNavigationOpen = (isOpen) => {
+      body.classList.toggle("menu-open", isOpen);
       navToggle.setAttribute("aria-expanded", String(isOpen));
+      navToggle.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
+    };
+    navToggle.addEventListener("click", () => {
+      setNavigationOpen(!body.classList.contains("menu-open"));
     });
 
     nav.querySelectorAll("a").forEach((link) => {
       link.addEventListener("click", () => {
-        body.classList.remove("menu-open");
-        navToggle.setAttribute("aria-expanded", "false");
+        setNavigationOpen(false);
       });
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && body.classList.contains("menu-open")) {
+        setNavigationOpen(false);
+        navToggle.focus();
+      }
     });
   }
 
@@ -260,6 +269,18 @@
   const scrollHideTargets = [mobileCta, agentChat].filter(Boolean);
   let scrollHideTimer = null;
 
+  if ("IntersectionObserver" in window && scrollHideTargets.length) {
+    const visibleForms = new Set();
+    const formObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) visibleForms.add(entry.target);
+        else visibleForms.delete(entry.target);
+      });
+      scrollHideTargets.forEach((target) => target.classList.toggle("form-in-view", visibleForms.size > 0));
+    });
+    document.querySelectorAll("form.lead-form").forEach((form) => formObserver.observe(form));
+  }
+
   const setScrollHidden = (hidden) => {
     scrollHideTargets.forEach((el) => {
       el.classList.toggle("scroll-hidden", hidden);
@@ -345,26 +366,51 @@
     if (source && /^[a-z0-9-]{1,30}$/i.test(source)) sourceField.value = source;
   }
 
-  document.querySelectorAll("form.lead-form").forEach((form) => {
+  document.querySelectorAll("form.lead-form").forEach((form, index) => {
+    const status = form.querySelector("[data-form-status]");
+    const contactField = form.querySelector('[name="contact"]');
+    const contactError = contactField ? document.createElement("span") : null;
+    if (status && contactField) {
+      contactError.id = `contact-error-${index}`;
+      contactError.className = "field-error";
+      contactError.hidden = true;
+      contactField.after(contactError);
+      contactField.setAttribute("aria-describedby", contactError.id);
+      contactField.addEventListener("input", () => {
+        if (contactField.getAttribute("aria-invalid") !== "true") return;
+        contactField.removeAttribute("aria-invalid");
+        contactError.hidden = true;
+        contactError.textContent = "";
+        status.textContent = "";
+      });
+    }
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
       const botcheck = form.querySelector('[name="botcheck"]');
       if (botcheck && botcheck.value) return;
 
-      const status = form.querySelector("[data-form-status]");
-      const contact = (form.querySelector('[name="contact"]')?.value || "").trim();
+      const contact = (contactField?.value || "").trim();
       const normalizedContact = contact.includes("@") ? contact : contact.replace(/[\s-]/g, "");
       const requiresMobile = form.classList.contains("interest-form");
       const validContact = requiresMobile
         ? /^(\+91)?[6-9]\d{9}$/.test(normalizedContact)
         : contactPattern.test(normalizedContact);
       if (!validContact) {
-        if (status) status.textContent = requiresMobile
+        const errorMessage = requiresMobile
           ? "Please enter a valid Indian mobile number."
           : "Please enter a valid Indian mobile number or email address.";
+        if (status) status.textContent = errorMessage;
+        if (contactError) {
+          contactError.textContent = errorMessage;
+          contactError.hidden = false;
+        }
+        contactField?.setAttribute("aria-invalid", "true");
+        contactField?.focus();
         return;
       }
+      contactField?.removeAttribute("aria-invalid");
+      if (contactError) contactError.hidden = true;
 
       const name = (form.querySelector('[name="name"]')?.value || "").trim();
       const message = (form.querySelector('[name="message"]')?.value || "").trim();
@@ -380,7 +426,7 @@
       }
 
       const button = form.querySelector('[type="submit"]');
-      const originalText = button ? button.textContent : "";
+      const originalContent = button ? button.innerHTML : "";
       if (button) {
         button.textContent = "Sending...";
         button.disabled = true;
@@ -406,7 +452,7 @@
           : "Thank you. Our sales team will be in touch soon.";
         setTimeout(() => {
           if (button) {
-            button.textContent = originalText;
+            button.innerHTML = originalContent;
             button.disabled = false;
           }
         }, 3200);

@@ -7,7 +7,7 @@ const IS_ROOT_OUTPUT = OUTPUT_DIR === ROOT;
 const SITE_URL = "https://vijaya.construction";
 const SITE_VARIANT = process.env.VIJAYA_SITE_VARIANT || "approved";
 const IS_ALL_EDITS_PREVIEW = SITE_VARIANT === "all-edits-preview";
-const ASSET_VERSION = IS_ALL_EDITS_PREVIEW ? "20260929-visual-refresh-2" : "20260929-approved-2";
+const ASSET_VERSION = IS_ALL_EDITS_PREVIEW ? "20260929-brand-audit-3" : "20260929-approved-3";
 const SECURITY_CSP = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -74,7 +74,7 @@ const ongoingProjects = [
     rera: "RERAA KM 88 OF 2025-2026",
     type: "Premium Residential Apartments",
     image: "ashiyana-hero",
-    heroImage: "home-hero",
+    heroImage: "ashiyana-aerial",
     brochurePage: "ashiyana-brochure.html",
     brochurePdf: "vijaya-ashiyana.pdf",
     short: "A high-rise on Rajgarh Link Road with planned rooftop leisure, swimming pool, gymnasium, banquet hall, landscaped open spaces, EV charging, and family amenities.",
@@ -250,7 +250,12 @@ function escapeHtml(value = "") {
 }
 
 function imagePath(prefix, name) {
-  return `${prefix}assets/images/${name}.webp`;
+  const version = name === "ashiyana-aerial" ? `?v=${ASSET_VERSION}` : "";
+  return `${prefix}assets/images/${name}.webp${version}`;
+}
+
+function aerialImageAttributes(prefix = "") {
+  return `src="${imagePath(prefix, "ashiyana-aerial")}" srcset="${imagePath(prefix, "ashiyana-aerial-960")} 960w, ${imagePath(prefix, "ashiyana-aerial-1600")} 1600w, ${imagePath(prefix, "ashiyana-aerial")} 2705w" sizes="100vw" width="2705" height="1353"`;
 }
 
 function assetPath(prefix, name) {
@@ -282,10 +287,10 @@ function header(prefix = "") {
   return `<header class="site-header">
   <div class="nav-shell">
     <a class="brand" href="${prefix}index.html" aria-label="Vijaya Construction home">
-      <span class="brand-logo"><img src="${prefix}assets/images/vijaya-mark-transparent.png" alt="" aria-hidden="true"></span>
+      <span class="brand-logo"><img src="${prefix}assets/images/vijaya-logo.png" width="120" height="135" alt="" aria-hidden="true"></span>
       <span class="brand-text"><span class="brand-name">Vijaya Construction</span>${brandPlace}</span>
     </a>
-    <nav class="primary-nav" data-primary-nav aria-label="Primary navigation">
+    <nav class="primary-nav" id="primary-navigation" data-primary-nav aria-label="Primary navigation">
       <a href="${prefix}index.html#ongoing">Ongoing Projects</a>
       <a href="${prefix}completed.html">${previewCopy("Completed", "Completed Projects")}</a>
       <a href="${prefix}index.html#why-vijaya">${previewCopy("Why Vijaya", "Why Vijaya Construction")}</a>
@@ -293,7 +298,7 @@ function header(prefix = "") {
     </nav>
     <div class="nav-actions">
       <a class="btn btn-primary desktop-only" href="${site.phoneHref}">${icons.phone} Call Sales</a>
-      <button class="nav-toggle" type="button" data-nav-toggle aria-label="Open navigation" aria-expanded="false"><span></span></button>
+      <button class="nav-toggle" type="button" data-nav-toggle aria-label="Open navigation" aria-expanded="false" aria-controls="primary-navigation"><span></span></button>
     </div>
   </div>
 </header>`;
@@ -505,13 +510,13 @@ function interestForm() {
     <label>Full name <input name="name" type="text" autocomplete="name" maxlength="90" required></label>
     <label>Mobile number <input name="contact" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" required></label>
   </div>
-  <div class="form-grid two">
-    <label>Email address <input name="email" type="email" autocomplete="email" maxlength="120"></label>
+  <div class="form-grid">
+    <label>Email address (optional) <input name="email" type="email" autocomplete="email" maxlength="120"></label>
     <label>Home preference <select name="bhk_interest" required><option value="">Choose a home</option><option>3 BHK at Ashiyana</option><option>Other Vijaya options</option><option>Still exploring</option></select></label>
   </div>
-  <div class="form-grid two">
-    <label>Budget range <select name="budget_range"><option value="">Prefer to discuss</option><option>Under Rs 75 lakh</option><option>Rs 75 lakh to Rs 1 crore</option><option>Rs 1 crore to Rs 1.5 crore</option><option>Above Rs 1.5 crore</option></select></label>
-    <label>Best time to call <select name="callback_time" required><option value="">Choose a time</option><option>Weekday morning (10 am - 12 pm IST)</option><option>Weekday afternoon (12 - 4 pm IST)</option><option>Weekday evening (4 - 6 pm IST)</option><option>Saturday (10 am - 6 pm IST)</option></select></label>
+  <div class="form-grid">
+    <label>Budget range (optional) <select name="budget_range"><option value="">Prefer to discuss</option><option>Rs 50 lakh or below</option><option value="Above Rs 50 lakh to Rs 75 lakh">Rs 50 - 75 lakh</option><option value="Above Rs 75 lakh to Rs 1 crore">Rs 75 lakh - 1 crore</option><option value="Above Rs 1 crore to Rs 1.5 crore">Rs 1 - 1.5 crore</option><option>Above Rs 1.5 crore</option></select></label>
+    <label>Best time to call (IST) <select name="callback_time" required><option value="">Choose a time</option><option value="Weekday morning (10 am - 12 pm IST)">Mon-Fri: 10 am - noon</option><option value="Weekday afternoon (12 - 4 pm IST)">Mon-Fri: 12 - 4 pm</option><option value="Weekday evening (4 - 6 pm IST)">Mon-Fri: 4 - 6 pm</option><option value="Saturday (10 am - 6 pm IST)">Sat: 10 am - 6 pm</option></select></label>
   </div>
   <label>What would you like to know? <textarea name="message" maxlength="1200" placeholder="Floor plans, current pricing, a guided visit, or any accessibility needs."></textarea></label>
   <label class="consent-row"><input type="checkbox" name="contact_consent" value="Yes" required><span>I agree to be contacted by Vijaya Construction about this enquiry.</span></label>
@@ -762,7 +767,7 @@ function homePage() {
     schema: [faqSchema],
     children: `<section class="hero">
   <div class="hero-media" data-hero-carousel aria-label="Views of planned Vijaya Ashiyana">
-    <img class="hero-slide is-active" data-hero-slide src="${imagePath("", "ashiyana-aerial")}" alt="Planned Vijaya Ashiyana tower and rooftop in Guwahati, aerial view" fetchpriority="high" loading="eager">
+    <img class="hero-slide is-active" data-hero-slide ${aerialImageAttributes()} alt="Planned Vijaya Ashiyana tower and rooftop in Guwahati, aerial view" fetchpriority="high" loading="eager">
     <img class="hero-slide" data-hero-slide src="${assetPath("", "ashiyana-aerial-golden.jpg")}" alt="Vijaya Ashiyana planned tower in golden-hour light" loading="lazy" decoding="async">
     <img class="hero-slide" data-hero-slide src="${assetPath("", "ashiyana-rooftop-pool-aerial.jpg")}" alt="Planned Ashiyana rooftop pool and recreation deck" loading="lazy" decoding="async">
     <div class="hero-carousel-controls" role="group" aria-label="Hero views"><button type="button" class="is-active" data-hero-control="0" aria-label="Show aerial view" title="Aerial view" aria-current="true"></button><button type="button" data-hero-control="1" aria-label="Show golden-hour view" title="Golden-hour view"></button><button type="button" data-hero-control="2" aria-label="Show rooftop view" title="Rooftop view"></button><button type="button" data-hero-playback aria-label="Pause slideshow" title="Pause slideshow">Pause</button></div>
@@ -772,7 +777,7 @@ function homePage() {
       <h1>${heroTitle}</h1>
       <p class="hero-copy">Meet Vijaya Ashiyana on Rajgarh Link Road: planned rooftop leisure, a central Guwahati address, and the record of 22 completed Vijaya projects. Completion is currently targeted for December 2029.</p>
       <div class="hero-actions">
-        <a class="btn btn-gold" href="ashiyana-interest.html">${icons.arrow} Explore Ashiyana</a>
+        <a class="btn btn-gold" href="buildings/vijaya-ashiyana.html">${icons.arrow} Explore Ashiyana</a>
         <a class="btn btn-light" href="${whatsappLink("Hi Vijaya Construction, I want details for your ongoing projects in Guwahati.")}" target="_blank" rel="noopener noreferrer">${icons.chat} WhatsApp</a>
         <a class="btn btn-outline desktop-hero-call" href="${site.phoneHref}">${icons.phone} Call now</a>
       </div>
@@ -885,7 +890,7 @@ function interestPage() {
     image: "ashiyana-aerial",
     schema: [breadcrumbSchema([{ name: "Home", url: "" }, { name: "Vijaya Ashiyana", url: "buildings/vijaya-ashiyana.html" }, { name: "Request details", url: "ashiyana-interest.html" }])],
     children: `<section class="interest-hero">
-  <div class="interest-image"><img src="${imagePath("", "ashiyana-aerial")}" alt="Planned Vijaya Ashiyana residential tower in Guwahati" fetchpriority="high"></div>
+  <div class="interest-image"><img ${aerialImageAttributes()} alt="Planned Vijaya Ashiyana residential tower in Guwahati" fetchpriority="high"></div>
   <div class="interest-heading"><h1>Discover Vijaya Ashiyana.</h1><p>Premium flats on Rajgarh Link Road, Guwahati. Request the official floor plans, current pricing and a guided site visit at a time that works for you.</p><div class="interest-facts"><span>70 planned residences</span><span>RERA: ${escapeHtml(ashiyana.rera)}</span><span>Completion target: December 2029</span></div></div>
 </section>
 <section class="interest-content" id="details">
@@ -981,7 +986,7 @@ function projectPage(project) {
     children: `<section class="hero project-hero">
   <div class="hero-media${project.status === "Completed" && !project.hasSitePhoto ? " hero-media-archive" : ""}">${project.status === "Completed" && !project.hasSitePhoto
     ? `<span>Completed Vijaya address in ${escapeHtml(project.location)}</span>`
-    : `<img src="${imagePath(prefix, project.heroImage || project.image)}" alt="${escapeHtml(project.status === "Completed" ? `Completed ${project.name} building at ${project.location}` : `Planned ${project.name} building at ${project.location}`)}">`}</div>
+    : `<img ${project.heroImage === "ashiyana-aerial" ? aerialImageAttributes(prefix) : `src="${imagePath(prefix, project.heroImage || project.image)}"`} alt="${escapeHtml(project.status === "Completed" ? `Completed ${project.name} building at ${project.location}` : `Planned ${project.name} building at ${project.location}`)}" fetchpriority="high">`}</div>
   <div class="hero-content">
     <div>
       <h1 class="project-title">${escapeHtml(project.name)}</h1>
